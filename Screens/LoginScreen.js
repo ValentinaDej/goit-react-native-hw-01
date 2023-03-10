@@ -18,7 +18,7 @@ const initialState = {
   password: "",
 };
 
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [dataLogin, setDataLogin] = useState(initialState);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
@@ -149,7 +149,9 @@ const LoginScreen = () => {
               )}
             </View>
             {!isShowKeyboard && (
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Registration")}
+              >
                 <Text style={styles.loginScreenLink}>
                   Don't have an account? Register
                 </Text>
@@ -218,6 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginScreenLink: {
+    //alignItems: "flex-end",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     textAlign: "center",
