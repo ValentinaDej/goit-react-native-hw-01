@@ -1,7 +1,14 @@
 import React from "react";
-import { View, Text, ImageBackground, Image, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ImageBackground,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -12,8 +19,19 @@ const ProfileScreen = () => {
           <Image source={require("../../assets/images/frame.png")} />
           <Image
             style={styles.addAvatar}
-            source={require("../../assets/images/add.png")}
+            source={require("../../assets/images/addGrey.png")}
           />
+          <TouchableOpacity
+            style={styles.logout}
+            onPress={() => {
+              navigation.navigate("Login");
+            }}
+          >
+            <Image
+              source={require("../../assets/images/log-out.png")}
+              styles={styles.logoutIcon}
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.wrapperForm}>
@@ -21,7 +39,7 @@ const ProfileScreen = () => {
             <View>
               <Text style={styles.title}>USER NAME</Text>
             </View>
-            <View>
+            <View style={{ marginTop: 32, alignItems: "center" }}>
               <Text>Profile info</Text>
             </View>
           </View>
@@ -42,10 +60,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   wrapperForm: {
-    height: 200,
-    //padding: 100,
-    //paddingBottom: 500,
-    //paddingTop: 10,
+    flex: 1,
+    alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
@@ -64,10 +80,28 @@ const styles = StyleSheet.create({
   },
   addAvatar: {
     position: "absolute",
-    left: "90%",
+    left: "84%",
     top: "60%",
+    transform: [{ rotate: "90deg" }],
+    width: 40,
+    height: 40,
+  },
+  logout: {
+    position: "absolute",
+    left: "170%",
+    top: "67%",
+    width: 50,
+    height: 50,
+  },
+  logoutIcon: {
     width: 25,
     height: 25,
+  },
+  title: {
+    marginTop: 92,
+    fontFamily: "Roboto-Regular",
+    fontSize: 30,
+    fontWeight: 500,
   },
 });
 

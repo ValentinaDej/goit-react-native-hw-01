@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
 
   title: {
     textAlign: "center",
-    fontFamily: "Roboto-Medium",
+    fontFamily: "Roboto-Regular",
     fontSize: 30,
     color: "#212121",
     marginBottom: 32,

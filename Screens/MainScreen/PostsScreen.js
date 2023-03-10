@@ -1,12 +1,31 @@
 import React from "react";
-import { Platform, View, Text, StyleSheet } from "react-native";
+import {
+  Platform,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 
-const PostsScreen = () => {
+const PostsScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Posts</Text>
       </View>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("Login");
+        }}
+        style={styles.logout}
+      >
+        <Image
+          style={styles.logoutIcon}
+          source={require("../../assets/images/log-out.png")}
+        />
+      </TouchableOpacity>
+
       <View style={styles.form}>
         <Text>Content</Text>
       </View>
@@ -36,6 +55,17 @@ const styles = StyleSheet.create({
   form: {
     marginHorizontal: 16,
     flex: 1,
+  },
+  logout: {
+    position: "relative",
+    top: -40,
+    left: 340,
+    width: 50,
+    height: 50,
+  },
+  logoutIcon: {
+    width: 24,
+    height: 24,
   },
 });
 
