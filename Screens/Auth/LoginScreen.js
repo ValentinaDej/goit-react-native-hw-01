@@ -44,7 +44,8 @@ const LoginScreen = ({ navigation }) => {
 
   function submitForm() {
     console.log(dataLogin);
-    setDataRegistration(initialState);
+    setDataLogin(initialState);
+    navigation.navigate("Home");
   }
 
   return (

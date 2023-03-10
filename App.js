@@ -2,7 +2,7 @@ import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 
-import useRoute from "./router";
+import AppNavigtor from "./Component/Navigation/AppNavigtor";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -14,7 +14,7 @@ export default function App() {
     return null;
   }
 
-  const routing = useRoute({});
+  const routing = AppNavigtor(null);
 
   return <NavigationContainer>{routing}</NavigationContainer>;
 }

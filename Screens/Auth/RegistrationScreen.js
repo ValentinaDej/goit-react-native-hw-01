@@ -48,6 +48,7 @@ const RegistrationScreen = ({ navigation }) => {
   function submitForm() {
     console.log(dataRegistration);
     setDataRegistration(initialState);
+    navigation.navigate("Home");
   }
 
   return (
