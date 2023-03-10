@@ -2,12 +2,18 @@ import "react-native-gesture-handler";
 
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useFonts } from "expo-font";
 
 import RegistrationScreen from "./Screens/Auth/RegistrationScreen";
 import LoginScreen from "./Screens/Auth/LoginScreen";
 
+import CreatePostsScreen from "./Screens/MainScreen/CreatePostsScreen";
+import PostsScreen from "./Screens/MainScreen/PostsScreen";
+import ProfileScreen from "./Screens/MainScreen/ProfileScreen";
+
 const authStack = createStackNavigator();
+const mainTab = createBottomTabNavigator();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -20,7 +26,16 @@ export default function App() {
   }
   return (
     <NavigationContainer>
-      <authStack.Navigator>
+      <mainTab.Navigator>
+        <mainTab.Screen name="Posts" component={PostsScreen} />
+        <mainTab.Screen name="CreatePosts" component={CreatePostsScreen} />
+        <mainTab.Screen name="Profile" component={ProfileScreen} />
+      </mainTab.Navigator>
+    </NavigationContainer>
+  );
+}
+
+/* <authStack.Navigator>
         <authStack.Screen
           options={{ headerShown: false }}
           name="Registration"
@@ -31,8 +46,4 @@ export default function App() {
           name="Login"
           component={LoginScreen}
         />
-        {/* <Stack.Screen name="Home" component={Home} /> */}
-      </authStack.Navigator>
-    </NavigationContainer>
-  );
-}
+      </authStack.Navigator> */
