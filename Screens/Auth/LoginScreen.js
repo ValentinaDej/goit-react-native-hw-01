@@ -45,6 +45,9 @@ const LoginScreen = ({ navigation }) => {
   function submitForm() {
     console.log(dataLogin);
     setDataLogin(initialState);
+    if (dataLogin.email === "" || dataLogin.password === "") {
+      return;
+    }
     navigation.navigate("Home");
   }
 

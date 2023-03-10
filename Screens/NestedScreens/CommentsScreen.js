@@ -1,13 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-const HomeScreen = () => {
-  return (
-    <View styles={styles.container}>
-      <Text>HomeScreen</Text>
-    </View>
-  );
-};
+const CommentsScreen = () => (
+  <View style={styles.container}>
+    <Text>CommentsScreen</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -17,4 +15,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default CommentsScreen;

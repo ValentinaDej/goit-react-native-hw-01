@@ -48,6 +48,13 @@ const RegistrationScreen = ({ navigation }) => {
   function submitForm() {
     console.log(dataRegistration);
     setDataRegistration(initialState);
+    if (
+      dataRegistration.login === "" ||
+      dataRegistration.email === "" ||
+      dataRegistration.password === ""
+    ) {
+      return;
+    }
     navigation.navigate("Home");
   }
 
@@ -92,6 +99,7 @@ const RegistrationScreen = ({ navigation }) => {
                         login: value,
                       }));
                     }}
+                    autoComplete="off"
                     style={{
                       ...styles.input,
                       borderColor: isFocus.login ? `#FF6C00` : `#E8E8E8`,
