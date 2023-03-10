@@ -9,22 +9,18 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ImageBackground,
-  Image,
 } from "react-native";
-import { useFonts } from "expo-font";
 
 const initialState = {
-  login: "",
   email: "",
   password: "",
 };
 
-const RegistrationScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation }) => {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
-  const [dataRegistration, setDataRegistration] = useState(initialState);
+  const [dataLogin, setDataLogin] = useState(initialState);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
   const [isFocus, setIsFocus] = useState({
-    login: false,
     email: false,
     password: false,
   });
@@ -41,22 +37,13 @@ const RegistrationScreen = ({ navigation }) => {
     };
   }, []);
 
-  const [fontsLoaded] = useFonts({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
-    "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
-  });
-
-  if (!fontsLoaded) {
-    return null;
-  }
-
   function keyboardHide() {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
   }
 
   function submitForm() {
-    console.log(dataRegistration);
+    console.log(dataLogin);
     setDataRegistration(initialState);
   }
 
@@ -65,47 +52,22 @@ const RegistrationScreen = ({ navigation }) => {
       <View style={styles.container}>
         <ImageBackground
           style={styles.imageBackground}
-          source={require("../assets/images/PhotoBG.jpg")}
+          source={require("../../assets/images/PhotoBG.jpg")}
         >
-          <View style={styles.avatarWrapper}>
-            <Image source={require("../assets/images/frame.png")} />
-            <Image
-              style={styles.addAvatar}
-              source={require("../assets/images/add.png")}
-            />
-          </View>
-
-          <View style={styles.wrapperForm}>
+          <View
+            style={{
+              ...styles.wrapperForm,
+              paddingBottom: isFocus.email || isFocus.password ? 40 : 111,
+            }}
+          >
             <View style={styles.form}>
               <View>
-                <Text style={styles.title}>Registration</Text>
+                <Text style={styles.title}>Log in</Text>
               </View>
               <KeyboardAvoidingView
                 behavior={Platform.OS == "ios" ? "padding" : "height"}
               >
                 <View>
-                  <TextInput
-                    onFocus={() => {
-                      setIsShowKeyboard(true);
-                      setIsFocus({ ...isFocus, login: true });
-                    }}
-                    onBlur={() => {
-                      setIsFocus({ ...isFocus, login: false });
-                    }}
-                    placeholderTextColor="#BDBDBD"
-                    placeholder="login"
-                    value={dataRegistration.login}
-                    onChangeText={(value) => {
-                      setDataRegistration((prevState) => ({
-                        ...prevState,
-                        login: value,
-                      }));
-                    }}
-                    style={{
-                      ...styles.input,
-                      borderColor: isFocus.login ? `#FF6C00` : `#E8E8E8`,
-                    }}
-                  />
                   <TextInput
                     keyboardType="email-address"
                     onFocus={() => {
@@ -116,9 +78,9 @@ const RegistrationScreen = ({ navigation }) => {
                       setIsFocus({ ...isFocus, email: false });
                     }}
                     placeholder="e-mail"
-                    value={dataRegistration.email}
+                    value={dataLogin.email}
                     onChangeText={(value) =>
-                      setDataRegistration((prevState) => ({
+                      setDataLogin((prevState) => ({
                         ...prevState,
                         email: value,
                       }))
@@ -139,9 +101,9 @@ const RegistrationScreen = ({ navigation }) => {
                       }}
                       placeholder="password"
                       maxLength={12}
-                      value={dataRegistration.password}
+                      value={dataLogin.password}
                       onChangeText={(value) =>
-                        setDataRegistration((prevState) => ({
+                        setDataLogin((prevState) => ({
                           ...prevState,
                           password: value,
                         }))
@@ -150,6 +112,7 @@ const RegistrationScreen = ({ navigation }) => {
                       style={{
                         ...styles.input,
                         borderColor: isFocus.password ? `#FF6C00` : `#E8E8E8`,
+                        //  marginBottom: -50,
                       }}
                     />
                     <TouchableOpacity
@@ -175,12 +138,11 @@ const RegistrationScreen = ({ navigation }) => {
               )}
             </View>
             {!isShowKeyboard && (
-              <TouchableOpacity>
-                <Text
-                  style={styles.loginScreenLink}
-                  onPress={() => navigation.navigate("Login")}
-                >
-                  Already have an account? Log in
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Registration")}
+              >
+                <Text style={styles.loginScreenLink}>
+                  Don't have an account? Register
                 </Text>
               </TouchableOpacity>
             )}
@@ -190,7 +152,7 @@ const RegistrationScreen = ({ navigation }) => {
     </TouchableWithoutFeedback>
   );
 };
-export default RegistrationScreen;
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -208,7 +170,7 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Medium",
     fontSize: 30,
     color: "#212121",
-    marginBottom: 27,
+    marginBottom: 32,
   },
   input: {
     fontFamily: "Roboto-Regular",
@@ -223,8 +185,8 @@ const styles = StyleSheet.create({
     color: "#BDBDBD",
   },
   wrapperForm: {
-    paddingBottom: 45,
-    paddingTop: 92,
+    paddingBottom: 111,
+    paddingTop: 32,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
@@ -247,26 +209,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginScreenLink: {
+    //alignItems: "flex-end",
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     textAlign: "center",
     color: "#1B4371",
-  },
-  avatarWrapper: {
-    left: "35%",
-    top: "10%",
-    zIndex: 100,
-    width: 120,
-    height: 120,
-    backgroundColor: "#F6F6F6",
-    borderRadius: 16,
-  },
-  addAvatar: {
-    position: "absolute",
-    left: "90%",
-    top: "60%",
-    width: 25,
-    height: 25,
   },
   statusPassword: {
     position: "absolute",
