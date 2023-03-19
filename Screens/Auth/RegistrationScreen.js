@@ -90,7 +90,6 @@ const RegistrationScreen = ({ navigation }) => {
                     onBlur={() => {
                       setIsFocus({ ...isFocus, login: false });
                     }}
-                    placeholderTextColor="#BDBDBD"
                     placeholder="login"
                     value={dataRegistration.login}
                     onChangeText={(value) => {
@@ -104,6 +103,7 @@ const RegistrationScreen = ({ navigation }) => {
                       ...styles.input,
                       borderColor: isFocus.login ? `#FF6C00` : `#E8E8E8`,
                     }}
+                    selectionColor="#BDBDBD"
                   />
                   <TextInput
                     keyboardType="email-address"
@@ -126,6 +126,7 @@ const RegistrationScreen = ({ navigation }) => {
                       ...styles.input,
                       borderColor: isFocus.email ? `#FF6C00` : `#E8E8E8`,
                     }}
+                    selectionColor="#BDBDBD"
                   />
                   <View>
                     <TextInput
@@ -150,6 +151,7 @@ const RegistrationScreen = ({ navigation }) => {
                         ...styles.input,
                         borderColor: isFocus.password ? `#FF6C00` : `#E8E8E8`,
                       }}
+                      selectionColor="#BDBDBD"
                     />
                     <TouchableOpacity
                       activeOpacity={0.8}

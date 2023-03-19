@@ -93,6 +93,7 @@ const LoginScreen = ({ navigation }) => {
                       ...styles.input,
                       borderColor: isFocus.email ? `#FF6C00` : `#E8E8E8`,
                     }}
+                    selectionColor="#BDBDBD"
                   />
                   <View>
                     <TextInput
@@ -118,6 +119,7 @@ const LoginScreen = ({ navigation }) => {
                         borderColor: isFocus.password ? `#FF6C00` : `#E8E8E8`,
                         //  marginBottom: -50,
                       }}
+                      selectionColor="#BDBDBD"
                     />
                     <TouchableOpacity
                       activeOpacity={0.8}

@@ -1,71 +1,92 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Platform,
   View,
   Text,
+  FlatList,
   Image,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { Feather } from "@expo/vector-icons";
 
-const PostsScreen = ({ navigation }) => {
+const PostsScreen = ({ navigation, route }) => {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    if (route.params) {
+      setPosts((prevState) => [...prevState, route.params]);
+    }
+  }, [route.params]);
+
+  console.log(posts);
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Posts</Text>
-      </View>
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("Login");
-        }}
-        style={styles.logout}
-      >
-        <Image
-          style={styles.logoutIcon}
-          source={require("../../assets/images/log-out.png")}
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerText}>Posts</Text>
+        </View>
+        <Feather
+          name="log-out"
+          size={24}
+          color="#BDBDBD"
+          onPress={() => {
+            navigation.navigate("Login");
+          }}
+          style={styles.icon}
         />
-      </TouchableOpacity>
+      </View>
 
       <View style={styles.form}>
-        <Text>Content</Text>
+        <View>
+          <Text>User info</Text>
+        </View>
+        <FlatList
+          data={posts}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={{ marginBottom: 10 }}>
+              <Image
+                source={{ uri: item.dataImage }}
+                style={{ height: 240, width: "100%", borderRadius: 8 }}
+              />
+              <Text>{item.dataDescription}</Text>
+            </View>
+          )}
+        />
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   header: {
+    display: "flex",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    borderBottomWidth: 0,
-    ...Platform.select({
-      ios: { shadowOpacity: 0.3 },
-      android: { elevation: 1 },
-    }),
+    justifyContent: "space-between",
+    marginTop: 30,
+    height: 60,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5",
+  },
+  headerContainer: {
+    flex: 1,
+    alignItems: "center",
   },
   headerText: {
     fontFamily: "Roboto-Medium",
     fontSize: 17,
-    marginTop: 60,
-    marginBottom: 15,
+    paddingLeft: 16,
+  },
+  icon: {
+    marginLeft: "auto",
+    paddingRight: 16,
   },
   form: {
     marginHorizontal: 16,
     flex: 1,
-  },
-  logout: {
-    position: "relative",
-    top: -40,
-    left: 340,
-    width: 50,
-    height: 50,
-  },
-  logoutIcon: {
-    width: 24,
-    height: 24,
+    marginTop: 32,
   },
 });
 
