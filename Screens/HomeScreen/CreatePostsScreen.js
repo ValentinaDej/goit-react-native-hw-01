@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   View,
-  Button,
   Image,
   TouchableOpacity,
   TextInput,
@@ -12,14 +11,21 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { Camera } from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
+import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
+import { useIsFocused } from "@react-navigation/native";
+import * as Notifications from "expo-notifications";
 
 export default function CreatePostsScreen({ navigation, route }) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
+  const [hasMediaLibraryPermission, setHasMediaLibraryPermission] =
+    useState(null);
+  const [hasImagePickerPermission, setImagePickerPermission] = useState(null);
+
   const [camera, setCamera] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
-  const [isNovigated, setIsNovigated] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [dataImage, setDataImage] = useState("");
   const [dataDescription, setDataDescription] = useState("");
@@ -29,31 +35,42 @@ export default function CreatePostsScreen({ navigation, route }) {
     longitude: "",
   });
 
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener("tabPress", (e) => {
-  //     console.log("Виконуєьтся при tabPress на CreatePostsScreen ");
-  //   });
-
-  //   return unsubscribe;
-  // }, [navigation]);
-
-  //  console.log(route.params);
-
-  //  useEffect(() => {
-  //    console.log("Novigated from Posts");
-  //    console.log(route.params);
-  //    if (route.params) {
-  //      //setPosts((prevState) => [...prevState, route.params]);
-  //    }
-  //  }, [route.params]);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasCameraPermission(status === "granted");
+      const cameraPermission = await Camera.requestCameraPermissionsAsync();
+      const mediaLibraryPermission =
+        await MediaLibrary.requestPermissionsAsync();
+
+      if (Platform.OS !== "web") {
+        const imagePickerPermission =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        setImagePickerPermission(imagePickerPermission.status === "granted");
+      }
+
+      setHasCameraPermission(cameraPermission.status === "granted");
+      setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
     })();
-    //  console.log("Виконуєьтся лише 1 раз");
   }, []);
+
+  useEffect(() => {
+    if (!isFocused) {
+      camera.stopRecording();
+    }
+  }, [isFocused]);
+
+  if (hasCameraPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
+
+  if (hasMediaLibraryPermission === false) {
+    return <Text>No access to gallery</Text>;
+  }
+
+  if (hasImagePickerPermission === false) {
+    return <Text>No access to gallery</Text>;
+  }
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
@@ -67,24 +84,18 @@ export default function CreatePostsScreen({ navigation, route }) {
     };
   }, []);
 
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+
   function keyboardHide() {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
   }
-
-  const takePicture = async () => {
-    if (camera) {
-      const photo = await camera.takePictureAsync(null);
-      const location = await Location.getCurrentPositionAsync();
-      // console.log(location.coords.latitude);
-      // console.log(location.coords.longitude);
-      setDataImage(photo.uri);
-      setDataLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
-    }
-  };
 
   const changeCameraType = () => {
     setType(
@@ -94,17 +105,50 @@ export default function CreatePostsScreen({ navigation, route }) {
     );
   };
 
-  const sendPost = () => {
-    navigation.navigate("Posts", {
-      dataImage,
-      dataDescription,
-      dataPlace,
-      dataLocation,
+  const takePhoto = async () => {
+    const photo = await camera.takePictureAsync();
+    setDataImage(photo.uri);
+
+    await MediaLibrary.createAssetAsync(photo.uri);
+
+    const location = await Location.getCurrentPositionAsync();
+    setDataLocation({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
     });
+  };
+
+  const downloadPhoto = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setDataImage(result.assets[0].uri);
+      }
+    } catch (E) {
+      console.log(E);
+    }
   };
 
   const clearPhoto = () => {
     setDataImage("");
+  };
+
+  const sendPost = () => {
+    if (dataImage && dataDescription && dataPlace) {
+      navigation.navigate("Posts", {
+        dataImage,
+        dataDescription,
+        dataPlace,
+        dataLocation,
+      });
+      clearPost();
+    }
   };
 
   const clearPost = () => {
@@ -113,10 +157,6 @@ export default function CreatePostsScreen({ navigation, route }) {
     setDataPlace("");
     setDataLocation({ latitude: "", longitude: "" });
   };
-
-  if (hasCameraPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
 
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
@@ -142,6 +182,7 @@ export default function CreatePostsScreen({ navigation, route }) {
               ref={(ref) => setCamera(ref)}
               style={styles.fixedRatio}
               type={type}
+              resizeMode="cover"
             >
               <View style={styles.lastPhotoContainer}>
                 {dataImage && (
@@ -150,7 +191,7 @@ export default function CreatePostsScreen({ navigation, route }) {
               </View>
               <TouchableOpacity
                 style={styles.iconCameraContainer}
-                onPress={takePicture}
+                onPress={takePhoto}
               >
                 <Feather name="camera" size={24} color="#BDBDBD" />
               </TouchableOpacity>
@@ -165,27 +206,18 @@ export default function CreatePostsScreen({ navigation, route }) {
 
           {dataImage ? (
             <TouchableOpacity onPress={clearPhoto}>
-              <Text style={{ ...styles.text, flex: 0 }}>Edit photo</Text>
+              <Text style={styles.editor}>Edit photo</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity>
-              <Text style={{ ...styles.text, flex: 0 }}>Download photo</Text>
+            <TouchableOpacity onPress={downloadPhoto}>
+              <Text style={styles.editor}>Download photo</Text>
             </TouchableOpacity>
           )}
 
           <KeyboardAvoidingView
             behavior={Platform.OS == "ios" ? "padding" : "height"}
           >
-            <View
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: "#E8E8E8",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 16,
-              }}
-            >
+            <View style={styles.textContainer}>
               <TextInput
                 onFocus={() => {
                   setIsShowKeyboard(true);
@@ -205,16 +237,7 @@ export default function CreatePostsScreen({ navigation, route }) {
               />
             </View>
 
-            <View
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: "#E8E8E8",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 32,
-              }}
-            >
+            <View style={{ ...styles.textContainer, marginBottom: 32 }}>
               <TouchableOpacity>
                 <Feather name="map-pin" size={24} color="#BDBDBD" />
               </TouchableOpacity>
@@ -235,7 +258,6 @@ export default function CreatePostsScreen({ navigation, route }) {
               />
             </View>
           </KeyboardAvoidingView>
-
           {!isShowKeyboard && (
             <View>
               <TouchableOpacity
@@ -247,11 +269,11 @@ export default function CreatePostsScreen({ navigation, route }) {
               </TouchableOpacity>
 
               <TouchableOpacity onPress={clearPost} style={styles.trash}>
+                {/* <Feather name="trash-2" size={24} color="black" /> */}
                 <Image
                   style={styles.trashIcon}
                   source={require("../../assets/images/trash.png")}
                 />
-                {/* <Feather name="trash-2" size={24} color="black" /> */}
               </TouchableOpacity>
             </View>
           )}
@@ -292,8 +314,10 @@ const styles = StyleSheet.create({
   cameraContainer: {
     //flex: 1,
     // justifyContent: "center",
+    height: 240,
   },
   fixedRatio: {
+    //flex: 1,
     justifyContent: "center",
     alignItems: "center",
     height: 240,
@@ -338,10 +362,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F6F6",
     borderRadius: 100,
     height: 50,
-    marginBottom: 16,
-    marginTop: 43,
     justifyContent: "center",
     alignItems: "center",
+  },
+  editor: {
+    fontFamily: "Roboto-Regular",
+    color: "#BDBDBD",
+    fontSize: 16,
+    fontWeight: "normal",
+    padding: 10,
+    paddingBottom: 32,
+    paddingTop: 8,
+  },
+  textContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#E8E8E8",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   text: {
     flex: 1,
@@ -352,12 +391,10 @@ const styles = StyleSheet.create({
     height: 50,
     padding: 10,
   },
-
   trash: {
-    marginTop: 120,
-    marginBottom: 20,
-    justifyContent: "center",
     alignItems: "center",
+    marginTop: 150,
+    height: 60,
+    marginBottom: 20,
   },
-  trashIcon: { height: 40, width: 70 },
 });

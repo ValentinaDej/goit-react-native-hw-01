@@ -48,7 +48,7 @@ const LoginScreen = ({ navigation }) => {
     if (dataLogin.email === "" || dataLogin.password === "") {
       return;
     }
-    navigation.navigate("Home");
+    navigation.navigate("Main");
   }
 
   return (

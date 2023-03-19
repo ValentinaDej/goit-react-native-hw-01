@@ -55,7 +55,7 @@ const RegistrationScreen = ({ navigation }) => {
     ) {
       return;
     }
-    navigation.navigate("Home");
+    navigation.navigate("Main");
   }
 
   return (

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-const DefaultScreenPosts = ({ navigation, route }) => {
+const PostsScreen = ({ navigation, route }) => {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
@@ -19,8 +19,6 @@ const DefaultScreenPosts = ({ navigation, route }) => {
       setPosts((prevState) => [...prevState, route.params]);
     }
   }, [route.params]);
-
-  //console.log(posts);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -53,13 +51,20 @@ const DefaultScreenPosts = ({ navigation, route }) => {
                 style={{ height: 240, width: "100%", borderRadius: 8 }}
               />
               <Text>{item.dataDescription}</Text>
+              <Button
+                title="go to map"
+                onPress={() => {
+                  const location = item.dataLocation;
+                  const description = item.dataDescription;
+                  return navigation.navigate("Map", { location, description });
+                }}
+              />
+              <Button
+                title="go to Comments"
+                onPress={() => navigation.navigate("Comments")}
+              />
             </View>
           )}
-        />
-        <Button title="go to map" onPress={() => navigation.navigate("Map")} />
-        <Button
-          title="go to Comments"
-          onPress={() => navigation.navigate("Comments")}
         />
       </View>
     </View>
@@ -97,4 +102,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DefaultScreenPosts;
+export default PostsScreen;

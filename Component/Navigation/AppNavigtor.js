@@ -22,7 +22,7 @@ const AppNavigtor = (isAuth) => {
         />
         <authStack.Screen
           options={{ headerShown: false }}
-          name="Home"
+          name="Main"
           component={BottomTabNavigator}
         />
       </authStack.Navigator>
