@@ -15,29 +15,44 @@ import { Camera } from "expo-camera";
 import { Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
 
-export default function CreatePostsScreen({ navigation }) {
+export default function CreatePostsScreen({ navigation, route }) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [camera, setCamera] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
+  const [isNovigated, setIsNovigated] = useState(false);
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [dataImage, setDataImage] = useState("");
   const [dataDescription, setDataDescription] = useState("");
   const [dataPlace, setDataPlace] = useState("");
+  const [dataLocation, setDataLocation] = useState({
+    latitude: "",
+    longitude: "",
+  });
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("tabPress", (e) => {
-      console.log("Виконуєьтся при tabPress на CreatePostsScreen ");
-    });
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener("tabPress", (e) => {
+  //     console.log("Виконуєьтся при tabPress на CreatePostsScreen ");
+  //   });
 
-    return unsubscribe;
-  }, [navigation]);
+  //   return unsubscribe;
+  // }, [navigation]);
+
+  //  console.log(route.params);
+
+  //  useEffect(() => {
+  //    console.log("Novigated from Posts");
+  //    console.log(route.params);
+  //    if (route.params) {
+  //      //setPosts((prevState) => [...prevState, route.params]);
+  //    }
+  //  }, [route.params]);
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasCameraPermission(status === "granted");
     })();
-    console.log("Виконуєьтся лише 1 раз");
+    //  console.log("Виконуєьтся лише 1 раз");
   }, []);
 
   useEffect(() => {
@@ -61,9 +76,13 @@ export default function CreatePostsScreen({ navigation }) {
     if (camera) {
       const photo = await camera.takePictureAsync(null);
       const location = await Location.getCurrentPositionAsync();
-      console.log(location.coords.latitude);
-      console.log(location.coords.longitude);
+      // console.log(location.coords.latitude);
+      // console.log(location.coords.longitude);
       setDataImage(photo.uri);
+      setDataLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
     }
   };
 
@@ -76,7 +95,12 @@ export default function CreatePostsScreen({ navigation }) {
   };
 
   const sendPost = () => {
-    navigation.navigate("Posts", { dataImage, dataDescription });
+    navigation.navigate("Posts", {
+      dataImage,
+      dataDescription,
+      dataPlace,
+      dataLocation,
+    });
   };
 
   const clearPhoto = () => {
@@ -87,6 +111,7 @@ export default function CreatePostsScreen({ navigation }) {
     clearPhoto();
     setDataDescription("");
     setDataPlace("");
+    setDataLocation({ latitude: "", longitude: "" });
   };
 
   if (hasCameraPermission === false) {

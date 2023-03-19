@@ -5,12 +5,13 @@ import {
   Text,
   FlatList,
   Image,
+  Button,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-const PostsScreen = ({ navigation, route }) => {
+const DefaultScreenPosts = ({ navigation, route }) => {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
@@ -19,7 +20,8 @@ const PostsScreen = ({ navigation, route }) => {
     }
   }, [route.params]);
 
-  console.log(posts);
+  //console.log(posts);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <View style={styles.header}>
@@ -53,6 +55,11 @@ const PostsScreen = ({ navigation, route }) => {
               <Text>{item.dataDescription}</Text>
             </View>
           )}
+        />
+        <Button title="go to map" onPress={() => navigation.navigate("Map")} />
+        <Button
+          title="go to Comments"
+          onPress={() => navigation.navigate("Comments")}
         />
       </View>
     </View>
@@ -90,4 +97,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PostsScreen;
+export default DefaultScreenPosts;

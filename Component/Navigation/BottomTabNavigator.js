@@ -1,21 +1,25 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Image, TouchableOpacity } from "react-native";
+import { v4 as uuidv4 } from "uuid";
 import { Feather } from "@expo/vector-icons";
 
 import CreatePostsScreen from "../../Screens/MainScreen/CreatePostsScreen";
-import PostsScreen from "../../Screens/MainScreen/PostsScreen";
+import PostsScreen from "./PostsScreen";
 import ProfileScreen from "../../Screens/MainScreen/ProfileScreen";
 
 const mainTab = createBottomTabNavigator();
 
 const BottomTabNavigator = ({ state, descriptors, navigation }) => {
+  // const data = { name: "John", age: 30 };
+  // const newPost = Math.floor(Math.random() * 1000) + 1;
   return (
     <mainTab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: [{ display: "flex", height: 70 }, null],
+        initialRouteName: "Posts",
         tabBarIcon: ({ color, size, focused }) => {
           let iconName;
 
@@ -31,7 +35,11 @@ const BottomTabNavigator = ({ state, descriptors, navigation }) => {
         },
       })}
     >
-      <mainTab.Screen name="Posts" component={PostsScreen} />
+      <mainTab.Screen
+        name="Posts"
+        component={PostsScreen}
+        // initialParams={{ itemId: 42 }}
+      />
       <mainTab.Screen
         name="CreatePosts"
         component={CreatePostsScreen}
