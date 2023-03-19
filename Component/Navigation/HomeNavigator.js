@@ -15,12 +15,15 @@ const HomeNavigator = () => {
         component={PostsScreen}
       />
       <NestedScreen.Screen
-        options={{ headerShown: false }}
+        options={{ headerShown: false, tabBarStyle: { display: "none" } }}
         name="Comments"
         component={CommentsScreen}
       />
       <NestedScreen.Screen
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          tabBarStyle: { display: "none" },
+        }}
         name="Map"
         component={MapScreen}
       />

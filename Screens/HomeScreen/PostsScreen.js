@@ -38,31 +38,52 @@ const PostsScreen = ({ navigation, route }) => {
       </View>
 
       <View style={styles.form}>
-        <View>
+        <View style={styles.userContainer}>
           <Text>User info</Text>
         </View>
         <FlatList
           data={posts}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
-            <View style={{ marginBottom: 10 }}>
+            <View style={styles.postContainer}>
               <Image
                 source={{ uri: item.dataImage }}
-                style={{ height: 240, width: "100%", borderRadius: 8 }}
+                style={styles.postImage}
               />
-              <Text>{item.dataDescription}</Text>
-              <Button
-                title="go to map"
-                onPress={() => {
-                  const location = item.dataLocation;
-                  const description = item.dataDescription;
-                  return navigation.navigate("Map", { location, description });
-                }}
-              />
-              <Button
-                title="go to Comments"
-                onPress={() => navigation.navigate("Comments")}
-              />
+              <Text style={styles.postDescription}>{item.dataDescription}</Text>
+              <View style={styles.comentCommonContainer}>
+                <TouchableOpacity
+                  style={styles.comentContainer}
+                  onPress={() => navigation.navigate("Comments")}
+                >
+                  <Feather
+                    name="message-circle"
+                    size={24}
+                    color="#BDBDBD"
+                    style={styles.comentIcon}
+                  />
+                  <Text style={styles.comentText}>0</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.comentContainer}
+                  onPress={() => {
+                    const location = item.dataLocation;
+                    const description = item.dataDescription;
+                    return navigation.navigate("Map", {
+                      location,
+                      description,
+                    });
+                  }}
+                >
+                  <Feather
+                    name="map-pin"
+                    size={24}
+                    color="#BDBDBD"
+                    style={styles.comentIcon}
+                  />
+                  <Text style={styles.comentPlace}>{item.dataPlace}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         />
@@ -99,6 +120,48 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     flex: 1,
     marginTop: 32,
+  },
+  userContainer: {
+    marginBottom: 32,
+  },
+  postContainer: {
+    marginBottom: 32,
+  },
+  postImage: {
+    height: 240,
+    width: "100%",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  postDescription: {
+    marginBottom: 8,
+    color: "#212121",
+    fontSize: 16,
+    fontFamily: "Roboto-Regular",
+    fontWeight: "bold",
+  },
+  comentCommonContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  comentContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  comentIcon: {
+    paddingRight: 5,
+  },
+  comentPlace: {
+    fontSize: 16,
+    fontFamily: "Roboto-Regular",
+    textDecorationLine: "underline",
+  },
+  comentText: {
+    fontSize: 16,
+    fontFamily: "Roboto-Regular",
+    color: "#BDBDBD",
   },
 });
 

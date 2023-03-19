@@ -13,10 +13,10 @@ import {
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
-import { Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useIsFocused } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
+import { Feather } from "@expo/vector-icons";
 
 export default function CreatePostsScreen({ navigation, route }) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -129,6 +129,12 @@ export default function CreatePostsScreen({ navigation, route }) {
 
       if (!result.canceled) {
         setDataImage(result.assets[0].uri);
+
+        const location = await Location.getCurrentPositionAsync();
+        setDataLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
       }
     } catch (E) {
       console.log(E);
@@ -263,7 +269,17 @@ export default function CreatePostsScreen({ navigation, route }) {
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={sendPost}
-                style={styles.btn}
+                style={{
+                  ...styles.btn,
+                  backgroundColor:
+                    dataImage && dataDescription && dataPlace
+                      ? "#FF6C00"
+                      : "#F6F6F6",
+                  color:
+                    dataImage && dataDescription && dataPlace
+                      ? "#FFFFFF"
+                      : "#BDBDBD",
+                }}
               >
                 <Text style={styles.text}>Send</Text>
               </TouchableOpacity>
