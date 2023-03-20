@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
-  Platform,
   View,
   Text,
   FlatList,
   Image,
-  Button,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-const PostsScreen = ({ navigation, route }) => {
+const DefaultScreenPosts = ({ navigation, route }) => {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
@@ -54,7 +52,11 @@ const PostsScreen = ({ navigation, route }) => {
               <View style={styles.comentCommonContainer}>
                 <TouchableOpacity
                   style={styles.comentContainer}
-                  onPress={() => navigation.navigate("Comments")}
+                  onPress={() =>
+                    navigation.navigate("Comments", {
+                      screenOptions: { tabBarStyle: { display: "none" } },
+                    })
+                  }
                 >
                   <Feather
                     name="message-circle"
@@ -165,4 +167,42 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PostsScreen;
+export default DefaultScreenPosts;
+
+// import React from "react";
+// import { createStackNavigator } from "@react-navigation/stack";
+// import PostsScreen from "../../Screens/HomeScreen/PostsScreen";
+// import CommentsScreen from "../../Screens/NestedScreens/CommentsScreen";
+// import MapScreen from "../../Screens/NestedScreens/MapScreen";
+
+// const NestedScreen = createStackNavigator();
+
+// const HomeNavigator = () => {
+//   return (
+//     <NestedScreen.Navigator initialRouteName="Posts">
+//       <NestedScreen.Screen
+//         name="Posts"
+//         component={PostsScreen}
+//         options={{
+//           headerShown: false,
+//         }}
+//       />
+//       <NestedScreen.Screen
+//         name="Comments"
+//         component={CommentsScreen}
+//         options={{
+//           headerShown: false,
+//         }}
+//       />
+//       <NestedScreen.Screen
+//         options={{
+//           headerShown: false,
+//         }}
+//         name="Map"
+//         component={MapScreen}
+//       />
+//     </NestedScreen.Navigator>
+//   );
+// };
+
+// export default HomeNavigator;

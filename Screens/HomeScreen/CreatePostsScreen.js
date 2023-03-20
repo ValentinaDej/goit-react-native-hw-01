@@ -15,7 +15,6 @@ import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { useIsFocused } from "@react-navigation/native";
-import * as Notifications from "expo-notifications";
 import { Feather } from "@expo/vector-icons";
 
 export default function CreatePostsScreen({ navigation, route }) {
@@ -57,8 +56,24 @@ export default function CreatePostsScreen({ navigation, route }) {
   useEffect(() => {
     if (!isFocused) {
       camera.stopRecording();
+      location.stopLocatiomUdatesAsync();
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setDataLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    })();
+  }, []);
 
   if (hasCameraPermission === false) {
     return <Text>No access to camera</Text>;
@@ -84,14 +99,6 @@ export default function CreatePostsScreen({ navigation, route }) {
     };
   }, []);
 
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
-    }),
-  });
-
   function keyboardHide() {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
@@ -110,12 +117,6 @@ export default function CreatePostsScreen({ navigation, route }) {
     setDataImage(photo.uri);
 
     await MediaLibrary.createAssetAsync(photo.uri);
-
-    const location = await Location.getCurrentPositionAsync();
-    setDataLocation({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    });
   };
 
   const downloadPhoto = async () => {
@@ -129,12 +130,6 @@ export default function CreatePostsScreen({ navigation, route }) {
 
       if (!result.canceled) {
         setDataImage(result.assets[0].uri);
-
-        const location = await Location.getCurrentPositionAsync();
-        setDataLocation({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
       }
     } catch (E) {
       console.log(E);
@@ -146,8 +141,9 @@ export default function CreatePostsScreen({ navigation, route }) {
   };
 
   const sendPost = () => {
+    console.log(dataLocation);
     if (dataImage && dataDescription && dataPlace) {
-      navigation.navigate("Posts", {
+      navigation.navigate("DefaultScreen", {
         dataImage,
         dataDescription,
         dataPlace,
@@ -161,7 +157,6 @@ export default function CreatePostsScreen({ navigation, route }) {
     clearPhoto();
     setDataDescription("");
     setDataPlace("");
-    setDataLocation({ latitude: "", longitude: "" });
   };
 
   return (
@@ -173,7 +168,7 @@ export default function CreatePostsScreen({ navigation, route }) {
             size={24}
             color="#BDBDBD"
             onPress={() => {
-              navigation.navigate("Posts");
+              navigation.navigate("DefaultScreen");
             }}
             style={styles.icon}
           />
@@ -328,12 +323,9 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   cameraContainer: {
-    //flex: 1,
-    // justifyContent: "center",
     height: 240,
   },
   fixedRatio: {
-    //flex: 1,
     justifyContent: "center",
     alignItems: "center",
     height: 240,

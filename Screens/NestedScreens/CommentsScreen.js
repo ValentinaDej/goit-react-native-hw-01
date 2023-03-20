@@ -10,7 +10,7 @@ const CommentsScreen = ({ navigation }) => (
         size={24}
         color="#BDBDBD"
         onPress={() => {
-          navigation.navigate("Posts");
+          navigation.navigate("DefaultScreen");
         }}
         style={styles.icon}
       />
