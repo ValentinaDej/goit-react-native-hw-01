@@ -22,6 +22,7 @@ export default function CreatePostsScreen({ navigation, route }) {
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] =
     useState(null);
   const [hasImagePickerPermission, setImagePickerPermission] = useState(null);
+  const [haslocationPermission, setLocationPermission] = useState(null);
 
   const [camera, setCamera] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
@@ -41,7 +42,8 @@ export default function CreatePostsScreen({ navigation, route }) {
       const cameraPermission = await Camera.requestCameraPermissionsAsync();
       const mediaLibraryPermission =
         await MediaLibrary.requestPermissionsAsync();
-
+      const locationPermission =
+        await Location.requestForegroundPermissionsAsync();
       if (Platform.OS !== "web") {
         const imagePickerPermission =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -50,30 +52,21 @@ export default function CreatePostsScreen({ navigation, route }) {
 
       setHasCameraPermission(cameraPermission.status === "granted");
       setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
-    })();
-  }, []);
+      setLocationPermission(locationPermission.status === "granted");
 
-  useEffect(() => {
-    if (!isFocused) {
-      camera.stopRecording();
-      location.stopLocatiomUdatesAsync();
-    }
-  }, [isFocused]);
-
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync();
       setDataLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
     })();
   }, []);
+
+  useEffect(() => {
+    if (!isFocused) {
+      camera.stopRecording();
+    }
+  }, [isFocused]);
 
   if (hasCameraPermission === false) {
     return <Text>No access to camera</Text>;
@@ -84,7 +77,11 @@ export default function CreatePostsScreen({ navigation, route }) {
   }
 
   if (hasImagePickerPermission === false) {
-    return <Text>No access to gallery</Text>;
+    return <Text>No access to image picker</Text>;
+  }
+
+  if (haslocationPermission === false) {
+    return <Text>No access to location</Text>;
   }
 
   useEffect(() => {
@@ -140,8 +137,7 @@ export default function CreatePostsScreen({ navigation, route }) {
     setDataImage("");
   };
 
-  const sendPost = () => {
-    console.log(dataLocation);
+  const sendPost = async () => {
     if (dataImage && dataDescription && dataPlace) {
       navigation.navigate("DefaultScreen", {
         dataImage,

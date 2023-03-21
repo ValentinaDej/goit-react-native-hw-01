@@ -6,7 +6,6 @@ import { Feather } from "@expo/vector-icons";
 function MapScreen({ navigation, route }) {
   const { latitude, longitude } = route.params.location;
   const dataDescription = route.params.description;
-  //console.log(latitude);
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <View style={styles.header}>
