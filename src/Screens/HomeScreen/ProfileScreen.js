@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  ImageBackground,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, ImageBackground, Image, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 const ProfileScreen = ({ navigation }) => {

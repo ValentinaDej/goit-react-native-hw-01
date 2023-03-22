@@ -279,7 +279,7 @@ export default function CreatePostsScreen({ navigation, route }) {
                 {/* <Feather name="trash-2" size={24} color="black" /> */}
                 <Image
                   style={styles.trashIcon}
-                  source={require("../../assets/images/trash.png")}
+                  source={require("../../assets/icons/trash.png")}
                 />
               </TouchableOpacity>
             </View>

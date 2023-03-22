@@ -69,7 +69,7 @@ const RegistrationScreen = ({ navigation }) => {
             <Image source={require("../../assets/images/frame.png")} />
             <Image
               style={styles.addAvatar}
-              source={require("../../assets/images/add.png")}
+              source={require("../../assets/icons/add.png")}
             />
           </View>
 
