@@ -11,6 +11,8 @@ import {
   ImageBackground,
   Image,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { authSignUp } from "../../redux/auth/authOperations";
 
 const initialState = {
   login: "",
@@ -27,6 +29,7 @@ const RegistrationScreen = ({ navigation }) => {
     email: false,
     password: false,
   });
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
@@ -47,6 +50,7 @@ const RegistrationScreen = ({ navigation }) => {
 
   function submitForm() {
     console.log(dataRegistration);
+    dispatch(authSignUp(dataRegistration));
     setDataRegistration(initialState);
     if (
       dataRegistration.login === "" ||

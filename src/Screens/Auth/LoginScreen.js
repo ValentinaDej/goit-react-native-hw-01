@@ -10,6 +10,8 @@ import {
   Keyboard,
   ImageBackground,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { authSignIn } from "../../redux/auth/authOperations";
 
 const initialState = {
   email: "",
@@ -24,6 +26,8 @@ const LoginScreen = ({ navigation }) => {
     email: false,
     password: false,
   });
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
@@ -44,6 +48,7 @@ const LoginScreen = ({ navigation }) => {
 
   function submitForm() {
     console.log(dataLogin);
+    dispatch(authSignIn(dataLogin));
     setDataLogin(initialState);
     if (dataLogin.email === "" || dataLogin.password === "") {
       return;
