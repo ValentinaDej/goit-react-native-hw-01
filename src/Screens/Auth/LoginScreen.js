@@ -10,7 +10,7 @@ import {
   Keyboard,
   ImageBackground,
 } from "react-native";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { authSignIn } from "../../redux/auth/authOperations";
 
 const initialState = {
@@ -47,13 +47,8 @@ const LoginScreen = ({ navigation }) => {
   }
 
   function submitForm() {
-    console.log(dataLogin);
     dispatch(authSignIn(dataLogin));
     setDataLogin(initialState);
-    if (dataLogin.email === "" || dataLogin.password === "") {
-      return;
-    }
-    navigation.navigate("Main");
   }
 
   return (

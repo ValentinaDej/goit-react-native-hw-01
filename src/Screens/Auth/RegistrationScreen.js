@@ -49,17 +49,8 @@ const RegistrationScreen = ({ navigation }) => {
   }
 
   function submitForm() {
-    console.log(dataRegistration);
     dispatch(authSignUp(dataRegistration));
     setDataRegistration(initialState);
-    if (
-      dataRegistration.login === "" ||
-      dataRegistration.email === "" ||
-      dataRegistration.password === ""
-    ) {
-      return;
-    }
-    navigation.navigate("Main");
   }
 
   return (

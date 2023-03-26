@@ -1,8 +1,16 @@
 import React from "react";
 import { View, Text, ImageBackground, Image, StyleSheet } from "react-native";
+import { useDispatch } from "react-redux";
 import { Feather } from "@expo/vector-icons";
 
-const ProfileScreen = ({ navigation }) => {
+import { authSignOut } from "../../redux/auth/authOperations";
+
+const ProfileScreen = () => {
+  const dispatch = useDispatch();
+
+  const signOut = () => {
+    dispatch(authSignOut());
+  };
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -26,9 +34,7 @@ const ProfileScreen = ({ navigation }) => {
               name="log-out"
               size={24}
               color="#BDBDBD"
-              onPress={() => {
-                navigation.navigate("Login");
-              }}
+              onPress={signOut}
               style={styles.icon}
             />
           </View>

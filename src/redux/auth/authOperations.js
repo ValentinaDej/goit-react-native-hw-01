@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
   updateProfile,
+  signOut,
 } from "firebase/auth";
 
 import authSlice from "./authReducer";
@@ -11,67 +12,59 @@ import app from "../../../firebase/config";
 
 export const authSignUp =
   ({ email, password, login }) =>
-  async (dispatch, getState) => {
-    const auth = getAuth(app);
+  async (dispatch) => {
+    try {
+      const auth = getAuth(app);
+      await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(auth.currentUser, { displayName: login });
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-
-        updateProfile(auth.currentUser, {
-          displayName: login,
+      const { uid, displayName } = auth.currentUser;
+      dispatch(
+        authSlice.actions.updateUserProfile({
+          userId: uid,
+          login: displayName,
         })
-          .then(() => {
-            // console.log("then auth.currentUser");
-            const { uid, displayName } = auth.currentUser;
-            //console.log(" uid, displayName", uid, displayName);
-            dispatch(
-              authSlice.actions.updateUserProfile({
-                userId: uid,
-                login: displayName,
-              })
-            );
-          })
-          .catch((error) => {});
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorMessage);
-      });
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
 export const authSignIn =
   ({ email, password }) =>
-  async (dispatch, getState) => {
-    const auth = getAuth(app);
-    signInWithEmailAndPassword(auth, email, password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-
-        const { displayName, email, uid } = auth.currentUser;
-        if (user !== null) {
-          // console.log(" displayName, email, uid", displayName, email, uid);
-        }
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorMessage);
-      });
+  async (dispatch) => {
+    try {
+      const auth = getAuth(app);
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
-// export const authSignOut = () => async (dispatch, getState) => {};
+export const authSignOut = () => async (dispatch, getState) => {
+  try {
+    const auth = getAuth(app);
+    await signOut(auth);
+    dispatch(authSlice.actions.authSignOut());
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
 export const authStateChanged = () => async (dispatch, getState) => {
   const auth = getAuth(app);
-  onAuthStateChanged(auth, (user) => {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // const uid = user.uid;
-      // console.log(uid);
-      //setUser(user);
-    } else {
-      // User is signed out
+      await dispatch(
+        authSlice.actions.updateUserProfile({
+          userId: user.uid,
+          login: user.displayName,
+        })
+      );
+      await dispatch(
+        authSlice.actions.authStateChanged({ stateChanged: true })
+      );
     }
   });
+  return unsubscribe;
 };

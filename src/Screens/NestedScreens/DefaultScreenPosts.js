@@ -8,6 +8,9 @@ import {
   StyleSheet,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useDispatch } from "react-redux";
+
+import { authSignOut } from "../../redux/auth/authOperations";
 
 const DefaultScreenPosts = ({ navigation, route }) => {
   const [posts, setPosts] = useState([]);
@@ -17,6 +20,11 @@ const DefaultScreenPosts = ({ navigation, route }) => {
       setPosts((prevState) => [...prevState, route.params]);
     }
   }, [route.params]);
+
+  const dispatch = useDispatch();
+  const signOut = () => {
+    dispatch(authSignOut());
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -28,9 +36,7 @@ const DefaultScreenPosts = ({ navigation, route }) => {
           name="log-out"
           size={24}
           color="#BDBDBD"
-          onPress={() => {
-            navigation.navigate("Login");
-          }}
+          onPress={signOut}
           style={styles.icon}
         />
       </View>

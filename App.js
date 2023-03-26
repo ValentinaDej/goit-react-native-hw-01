@@ -1,16 +1,13 @@
 import "react-native-gesture-handler";
-import React, { useState, useEffect } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import { Provider, useSelector } from "react-redux";
-import { store } from "./src/redux/store";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import React, { useState } from "react";
 
-import AppNavigtor from "./src/Routers/AuthStack";
-import app from "./firebase/config";
+import { useFonts } from "expo-font";
+import { Provider } from "react-redux";
+import { store } from "./src/redux/store";
+
+import Main from "./components/Main";
 
 export default function App() {
-  const [user, setUser] = useState(null);
   const [fontsLoaded] = useFonts({
     "Roboto-Regular": require("./src/assets/fonts/Roboto-Regular.ttf"),
     "Roboto-Medium": require("./src/assets/fonts/Roboto-Medium.ttf"),
@@ -20,14 +17,9 @@ export default function App() {
     return null;
   }
 
-  const state = useSelector((state) => state);
-  console.log(state);
-  //useEffect(() => {}, []);
-  const routing = AppNavigtor(null);
-
   return (
     <Provider store={store}>
-      <NavigationContainer>{routing}</NavigationContainer>
+      <Main />
     </Provider>
   );
 }
