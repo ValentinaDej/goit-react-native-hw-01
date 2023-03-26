@@ -11,7 +11,9 @@ import {
   ImageBackground,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
+
 import { authSignIn } from "../../redux/auth/authOperations";
+import authSlice from "../../redux/auth/authReducer";
 
 const initialState = {
   email: "",
@@ -26,6 +28,7 @@ const LoginScreen = ({ navigation }) => {
     email: false,
     password: false,
   });
+  const { errorMessage } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
 
@@ -47,8 +50,21 @@ const LoginScreen = ({ navigation }) => {
   }
 
   function submitForm() {
-    dispatch(authSignIn(dataLogin));
+    if (dataLogin.email && dataLogin.password) {
+      dispatch(authSignIn(dataLogin));
+    } else {
+      dispatch(
+        authSlice.actions.authSetError({
+          errorMessage: "Please fill in all fields.",
+        })
+      );
+    }
+  }
+
+  function moveToRegistration() {
     setDataLogin(initialState);
+    dispatch(authSlice.actions.authSetError({ errorMessage: "" }));
+    navigation.navigate("Registration");
   }
 
   return (
@@ -68,6 +84,7 @@ const LoginScreen = ({ navigation }) => {
               <View>
                 <Text style={styles.title}>Log in</Text>
               </View>
+              {errorMessage ? <Text>{errorMessage}</Text> : null}
               <KeyboardAvoidingView
                 behavior={Platform.OS == "ios" ? "padding" : "height"}
               >
@@ -144,9 +161,7 @@ const LoginScreen = ({ navigation }) => {
               )}
             </View>
             {!isShowKeyboard && (
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Registration")}
-              >
+              <TouchableOpacity onPress={moveToRegistration}>
                 <Text style={styles.loginScreenLink}>
                   Don't have an account? Register
                 </Text>

@@ -6,10 +6,11 @@ import AppNavigtor from "../src/Routers/AuthStack";
 import { authStateChanged } from "../src/redux/auth/authOperations";
 
 const Main = () => {
-  const { stateChanged } = useSelector((state) => state.auth);
+  const { stateChanged, errorMessage } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   //console.log("stateChanged", stateChanged);
+  //console.log("errorMessage", errorMessage);
 
   useEffect(() => {
     dispatch(authStateChanged());

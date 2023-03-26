@@ -25,8 +25,9 @@ export const authSignUp =
           login: displayName,
         })
       );
+      c;
     } catch (error) {
-      console.log(error.message);
+      dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
     }
   };
 
@@ -36,8 +37,9 @@ export const authSignIn =
     try {
       const auth = getAuth(app);
       await signInWithEmailAndPassword(auth, email, password);
+      dispatch(authSlice.actions.authSetError({ errorMessage: "" }));
     } catch (error) {
-      console.log(error.message);
+      dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
     }
   };
 
@@ -46,8 +48,9 @@ export const authSignOut = () => async (dispatch, getState) => {
     const auth = getAuth(app);
     await signOut(auth);
     dispatch(authSlice.actions.authSignOut());
+    dispatch(authSlice.actions.authSetError({ errorMessage: "" }));
   } catch (error) {
-    console.log(error.message);
+    dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
   }
 };
 
@@ -55,15 +58,13 @@ export const authStateChanged = () => async (dispatch, getState) => {
   const auth = getAuth(app);
   const unsubscribe = onAuthStateChanged(auth, async (user) => {
     if (user) {
-      await dispatch(
+      dispatch(
         authSlice.actions.updateUserProfile({
           userId: user.uid,
           login: user.displayName,
         })
       );
-      await dispatch(
-        authSlice.actions.authStateChanged({ stateChanged: true })
-      );
+      dispatch(authSlice.actions.authStateChanged({ stateChanged: true }));
     }
   });
   return unsubscribe;

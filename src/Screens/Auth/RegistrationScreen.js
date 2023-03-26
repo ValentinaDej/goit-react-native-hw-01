@@ -11,8 +11,10 @@ import {
   ImageBackground,
   Image,
 } from "react-native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+
 import { authSignUp } from "../../redux/auth/authOperations";
+import authSlice from "../../redux/auth/authReducer";
 
 const initialState = {
   login: "",
@@ -29,6 +31,7 @@ const RegistrationScreen = ({ navigation }) => {
     email: false,
     password: false,
   });
+  const { errorMessage } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -49,8 +52,25 @@ const RegistrationScreen = ({ navigation }) => {
   }
 
   function submitForm() {
-    dispatch(authSignUp(dataRegistration));
+    if (
+      dataRegistration.email &&
+      dataRegistration.login &&
+      dataRegistration.password
+    ) {
+      dispatch(authSignUp(dataRegistration));
+    } else {
+      dispatch(
+        authSlice.actions.authSetError({
+          errorMessage: "Please fill in all fields.",
+        })
+      );
+    }
+  }
+
+  function moveToLogin() {
     setDataRegistration(initialState);
+    dispatch(authSlice.actions.authSetError({ errorMessage: "" }));
+    navigation.navigate("Login");
   }
 
   return (
@@ -73,6 +93,7 @@ const RegistrationScreen = ({ navigation }) => {
               <View>
                 <Text style={styles.title}>Registration</Text>
               </View>
+              {errorMessage ? <Text>{errorMessage}</Text> : null}
               <KeyboardAvoidingView
                 behavior={Platform.OS == "ios" ? "padding" : "height"}
               >
@@ -172,10 +193,7 @@ const RegistrationScreen = ({ navigation }) => {
             </View>
             {!isShowKeyboard && (
               <TouchableOpacity>
-                <Text
-                  style={styles.loginScreenLink}
-                  onPress={() => navigation.navigate("Login")}
-                >
+                <Text style={styles.loginScreenLink} onPress={moveToLogin}>
                   Already have an account? Log in
                 </Text>
               </TouchableOpacity>
