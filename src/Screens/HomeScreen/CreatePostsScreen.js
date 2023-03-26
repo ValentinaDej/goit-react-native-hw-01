@@ -16,6 +16,9 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { useIsFocused } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
+import { ref, uploadBytes } from "firebase/storage";
+
+import { storage } from "../../../firebase/config";
 
 export default function CreatePostsScreen({ navigation, route }) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -139,6 +142,7 @@ export default function CreatePostsScreen({ navigation, route }) {
 
   const sendPost = async () => {
     if (dataImage && dataDescription && dataPlace) {
+      uploadPhotoToServer();
       navigation.navigate("DefaultScreen", {
         dataImage,
         dataDescription,
@@ -146,6 +150,20 @@ export default function CreatePostsScreen({ navigation, route }) {
         dataLocation,
       });
       clearPost();
+    }
+  };
+
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(dataImage);
+    const file = await response.blob();
+    const uniquePostId = Date.now().toString();
+
+    const storageRef = ref(storage, `postImage/${uniquePostId}`);
+    try {
+      const snapshot = await uploadBytes(storageRef, file);
+      return snapshot;
+    } catch (error) {
+      console.log(error.code);
     }
   };
 

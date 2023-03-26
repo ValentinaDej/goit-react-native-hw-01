@@ -8,7 +8,7 @@ import {
 } from "firebase/auth";
 
 import authSlice from "./authReducer";
-import app from "../../../firebase/config";
+import { app } from "../../../firebase/config";
 
 export const authSignUp =
   ({ email, password, login }) =>
