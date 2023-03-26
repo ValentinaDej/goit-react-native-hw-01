@@ -14,6 +14,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { authSignIn } from "../../redux/auth/authOperations";
 import authSlice from "../../redux/auth/authReducer";
+import errorHandle from "../../services/errorHandle";
 
 const initialState = {
   email: "",
@@ -84,7 +85,7 @@ const LoginScreen = ({ navigation }) => {
               <View>
                 <Text style={styles.title}>Log in</Text>
               </View>
-              {errorMessage ? <Text>{errorMessage}</Text> : null}
+              {errorMessage ? <Text>{errorHandle(errorMessage)}</Text> : null}
               <KeyboardAvoidingView
                 behavior={Platform.OS == "ios" ? "padding" : "height"}
               >

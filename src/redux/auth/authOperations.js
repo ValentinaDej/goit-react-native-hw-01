@@ -28,6 +28,7 @@ export const authSignUp =
       c;
     } catch (error) {
       dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
+      console.log(error.code);
     }
   };
 
@@ -40,6 +41,7 @@ export const authSignIn =
       dispatch(authSlice.actions.authSetError({ errorMessage: "" }));
     } catch (error) {
       dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
+      console.log(error.code);
     }
   };
 
@@ -51,6 +53,7 @@ export const authSignOut = () => async (dispatch, getState) => {
     dispatch(authSlice.actions.authSetError({ errorMessage: "" }));
   } catch (error) {
     dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
+    console.log(error.code);
   }
 };
 
