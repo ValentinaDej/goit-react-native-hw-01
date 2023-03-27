@@ -10,15 +10,17 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
 } from "react-native";
+import { useSelector } from "react-redux";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { useIsFocused } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc } from "firebase/firestore";
 
-import { storage } from "../../../firebase/config";
+import { storage, db } from "../../../firebase/config";
 
 export default function CreatePostsScreen({ navigation, route }) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -40,6 +42,8 @@ export default function CreatePostsScreen({ navigation, route }) {
 
   const isFocused = useIsFocused();
 
+  const { userId, login } = useSelector((state) => state.auth);
+
   useEffect(() => {
     (async () => {
       const cameraPermission = await Camera.requestCameraPermissionsAsync();
@@ -57,10 +61,10 @@ export default function CreatePostsScreen({ navigation, route }) {
       setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
       setLocationPermission(locationPermission.status === "granted");
 
-      const location = await Location.getCurrentPositionAsync();
+      const locationRes = await Location.getCurrentPositionAsync();
       setDataLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: locationRes.coords.latitude,
+        longitude: locationRes.coords.longitude,
       });
     })();
   }, []);
@@ -142,14 +146,31 @@ export default function CreatePostsScreen({ navigation, route }) {
 
   const sendPost = async () => {
     if (dataImage && dataDescription && dataPlace) {
-      uploadPhotoToServer();
+      uploadPostToServer();
       navigation.navigate("DefaultScreen", {
-        dataImage,
-        dataDescription,
-        dataPlace,
-        dataLocation,
+        // dataImage,
+        // dataDescription,
+        // dataPlace,
+        // dataLocation,
       });
       clearPost();
+    }
+  };
+
+  const uploadPostToServer = async () => {
+    const photo = await uploadPhotoToServer();
+    try {
+      const docRef = await addDoc(collection(db, "posts"), {
+        photo,
+        description: dataDescription,
+        place: dataPlace,
+        location: dataLocation,
+        userId,
+        login,
+      });
+      // console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
     }
   };
 
@@ -158,12 +179,13 @@ export default function CreatePostsScreen({ navigation, route }) {
     const file = await response.blob();
     const uniquePostId = Date.now().toString();
 
-    const storageRef = ref(storage, `postImage/${uniquePostId}`);
     try {
-      const snapshot = await uploadBytes(storageRef, file);
-      return snapshot;
+      const storageRef = ref(storage, `postImage/${uniquePostId}`);
+      await uploadBytes(storageRef, file);
+      const processedPhoto = await getDownloadURL(storageRef);
+      return processedPhoto;
     } catch (error) {
-      console.log(error.code);
+      console.log("error", error.code);
     }
   };
 

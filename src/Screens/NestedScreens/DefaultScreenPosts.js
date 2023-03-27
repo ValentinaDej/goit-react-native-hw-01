@@ -9,17 +9,29 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
+import { collection, getDocs } from "firebase/firestore";
 
 import { authSignOut } from "../../redux/auth/authOperations";
+import { db } from "../../../firebase/config";
 
 const DefaultScreenPosts = ({ navigation, route }) => {
   const [posts, setPosts] = useState([]);
 
+  const getAllPost = async () => {
+    const querySnapshot = await getDocs(collection(db, "posts"));
+    const data = querySnapshot.docs;
+    setPosts(data.map((doc) => ({ ...doc.data(), id: doc.id })));
+  };
+
   useEffect(() => {
-    if (route.params) {
-      setPosts((prevState) => [...prevState, route.params]);
-    }
-  }, [route.params]);
+    getAllPost();
+  }, []);
+
+  // useEffect(() => {
+  //   if (route.params) {
+  //     setPosts((prevState) => [...prevState, route.params]);
+  //   }
+  // }, [route.params]);
 
   const dispatch = useDispatch();
   const signOut = () => {
@@ -50,11 +62,8 @@ const DefaultScreenPosts = ({ navigation, route }) => {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.postContainer}>
-              <Image
-                source={{ uri: item.dataImage }}
-                style={styles.postImage}
-              />
-              <Text style={styles.postDescription}>{item.dataDescription}</Text>
+              <Image source={{ uri: item.photo }} style={styles.postImage} />
+              <Text style={styles.postDescription}>{item.description}</Text>
               <View style={styles.comentCommonContainer}>
                 <TouchableOpacity
                   style={styles.comentContainer}
@@ -75,8 +84,8 @@ const DefaultScreenPosts = ({ navigation, route }) => {
                 <TouchableOpacity
                   style={styles.comentContainer}
                   onPress={() => {
-                    const location = item.dataLocation;
-                    const description = item.dataDescription;
+                    const location = item.location;
+                    const description = item.description;
                     return navigation.navigate("Map", {
                       location,
                       description,
@@ -89,7 +98,7 @@ const DefaultScreenPosts = ({ navigation, route }) => {
                     color="#BDBDBD"
                     style={styles.comentIcon}
                   />
-                  <Text style={styles.comentPlace}>{item.dataPlace}</Text>
+                  <Text style={styles.comentPlace}>{item.place}</Text>
                 </TouchableOpacity>
               </View>
             </View>
