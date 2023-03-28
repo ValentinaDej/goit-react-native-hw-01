@@ -9,12 +9,13 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
+import { useFocusEffect } from "@react-navigation/native";
 import { collection, getDocs } from "firebase/firestore";
 
 import { authSignOut } from "../../redux/auth/authOperations";
 import { db } from "../../../firebase/config";
 
-const DefaultScreenPosts = ({ navigation, route }) => {
+const DefaultScreenPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
 
   const getAllPost = async () => {
@@ -23,15 +24,9 @@ const DefaultScreenPosts = ({ navigation, route }) => {
     setPosts(data.map((doc) => ({ ...doc.data(), id: doc.id })));
   };
 
-  useEffect(() => {
+  useFocusEffect(() => {
     getAllPost();
-  }, []);
-
-  // useEffect(() => {
-  //   if (route.params) {
-  //     setPosts((prevState) => [...prevState, route.params]);
-  //   }
-  // }, [route.params]);
+  });
 
   const dispatch = useDispatch();
   const signOut = () => {
@@ -68,9 +63,10 @@ const DefaultScreenPosts = ({ navigation, route }) => {
                 <TouchableOpacity
                   style={styles.comentContainer}
                   onPress={() =>
-                    navigation.navigate("Comments", {
-                      screenOptions: { tabBarStyle: { display: "none" } },
-                    })
+                    // navigation.navigate("Comments", {
+                    //   screenOptions: { tabBarStyle: { display: "none" } },
+                    // })
+                    navigation.navigate("Comments", { postId: item.id })
                   }
                 >
                   <Feather

@@ -147,12 +147,7 @@ export default function CreatePostsScreen({ navigation, route }) {
   const sendPost = async () => {
     if (dataImage && dataDescription && dataPlace) {
       uploadPostToServer();
-      navigation.navigate("DefaultScreen", {
-        // dataImage,
-        // dataDescription,
-        // dataPlace,
-        // dataLocation,
-      });
+      navigation.navigate("DefaultScreen");
       clearPost();
     }
   };
@@ -168,7 +163,6 @@ export default function CreatePostsScreen({ navigation, route }) {
         userId,
         login,
       });
-      // console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
