@@ -10,7 +10,14 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { Feather } from "@expo/vector-icons";
-import { doc, collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  doc,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+} from "firebase/firestore";
 
 import { db } from "../../../firebase/config";
 
@@ -30,6 +37,7 @@ const CommentsScreen = ({ navigation, route }) => {
       await addDoc(collection(docRef, "comments"), {
         comment,
         login,
+        createdAt: Date.now().toString(),
       });
       setComment("");
       getAllComments();
@@ -39,8 +47,15 @@ const CommentsScreen = ({ navigation, route }) => {
   };
 
   const getAllComments = async () => {
+    // const docRef = await doc(db, "posts", postId);
+    // const querySnapshot = await getDocs(collection(docRef, "comments"));
+    // const data = querySnapshot.docs;
+    // setAllComments(data.map((doc) => ({ ...doc.data(), id: doc.id })));
+
     const docRef = await doc(db, "posts", postId);
-    const querySnapshot = await getDocs(collection(docRef, "comments"));
+    const comentRef = collection(docRef, "comments");
+    const q = query(comentRef, orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
     const data = querySnapshot.docs;
     setAllComments(data.map((doc) => ({ ...doc.data(), id: doc.id })));
   };

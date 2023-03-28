@@ -162,6 +162,7 @@ export default function CreatePostsScreen({ navigation, route }) {
         location: dataLocation,
         userId,
         login,
+        createdAt: Date.now().toString(),
       });
     } catch (e) {
       console.error("Error adding document: ", e);

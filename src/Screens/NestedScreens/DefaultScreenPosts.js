@@ -10,7 +10,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { useFocusEffect } from "@react-navigation/native";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 import { authSignOut } from "../../redux/auth/authOperations";
 import { db } from "../../../firebase/config";
@@ -19,9 +19,16 @@ const DefaultScreenPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
 
   const getAllPost = async () => {
-    const querySnapshot = await getDocs(collection(db, "posts"));
+    const postssRef = await collection(db, "posts");
+    const q = query(postssRef, orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
     const data = querySnapshot.docs;
     setPosts(data.map((doc) => ({ ...doc.data(), id: doc.id })));
+
+    // const querySnapshot = await getDocs(collection(db, "posts"));
+
+    // const data = querySnapshot.docs;
+    // setPosts(data.map((doc) => ({ ...doc.data(), id: doc.id })));
   };
 
   useFocusEffect(() => {
