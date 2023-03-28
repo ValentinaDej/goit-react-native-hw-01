@@ -70,9 +70,6 @@ const DefaultScreenPosts = ({ navigation }) => {
                 <TouchableOpacity
                   style={styles.comentContainer}
                   onPress={() =>
-                    // navigation.navigate("Comments", {
-                    //   screenOptions: { tabBarStyle: { display: "none" } },
-                    // })
                     navigation.navigate("Comments", { postId: item.id })
                   }
                 >
