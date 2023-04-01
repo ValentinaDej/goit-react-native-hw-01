@@ -39,6 +39,7 @@ const ProfileScreen = ({ navigation }) => {
     try {
       const auth = getAuth(app);
       const user = auth.currentUser;
+      console.log(user.photoURL);
       if (user !== null) {
         setUserInfo({
           displayName: user.displayName,

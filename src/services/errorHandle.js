@@ -10,6 +10,8 @@ const errorHandle = (errorMessage) => {
       return "Password is wrong. Please update it.";
     case "auth/user-not-found":
       return "User not found. Please update it.";
+    case "auth/too-many-requests":
+      return "Too many requests. Please take a break.";
     default:
       return errorMessage;
   }

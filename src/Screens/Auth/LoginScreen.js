@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ImageBackground,
+  ActivityIndicator,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -29,6 +30,7 @@ const LoginScreen = ({ navigation }) => {
     email: false,
     password: false,
   });
+  const [loading, setLoading] = useState(false);
   const { errorMessage } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
@@ -51,6 +53,7 @@ const LoginScreen = ({ navigation }) => {
   }
 
   function submitForm() {
+    setLoading(true);
     if (dataLogin.email && dataLogin.password) {
       dispatch(authSignIn(dataLogin));
     } else {
@@ -60,6 +63,7 @@ const LoginScreen = ({ navigation }) => {
         })
       );
     }
+    setLoading(false);
   }
 
   function moveToRegistration() {
@@ -89,7 +93,12 @@ const LoginScreen = ({ navigation }) => {
               <KeyboardAvoidingView
                 behavior={Platform.OS == "ios" ? "padding" : "height"}
               >
-                <View>
+                <View style={styles.inputContainer}>
+                  {loading && (
+                    <View style={styles.activityIndicatorContainer}>
+                      <ActivityIndicator size="large" color="#FF6C00" />
+                    </View>
+                  )}
                   <TextInput
                     keyboardType="email-address"
                     onFocus={() => {
@@ -243,5 +252,19 @@ const styles = StyleSheet.create({
     left: "80%",
     color: "#1B4371",
     fontSize: 16,
+  },
+  inputContainer: {
+    position: "relative",
+  },
+  activityIndicatorContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    zIndex: 999,
   },
 });

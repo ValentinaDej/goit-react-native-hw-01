@@ -10,6 +10,7 @@ import {
   Keyboard,
   ImageBackground,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import * as ImagePicker from "expo-image-picker";
@@ -40,6 +41,7 @@ const RegistrationScreen = ({ navigation }) => {
   const { errorMessage } = useSelector((state) => state.auth);
   const [hasImagePickerPermission, setImagePickerPermission] = useState(null);
   const [temtUserPhoto, setTemtUserPhoto] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -85,6 +87,7 @@ const RegistrationScreen = ({ navigation }) => {
   }
 
   async function submitForm() {
+    setLoading(true);
     if (
       dataRegistration.email &&
       dataRegistration.login &&
@@ -97,8 +100,11 @@ const RegistrationScreen = ({ navigation }) => {
           photo: photoSt,
           isReady: true,
         }));
+        setLoading(false);
+        return;
+      } else {
+        await dispatch(authSignUp(dataRegistration));
       }
-      // await dispatch(authSignUp(dataRegistration));
     } else {
       dispatch(
         authSlice.actions.authSetError({
@@ -106,6 +112,7 @@ const RegistrationScreen = ({ navigation }) => {
         })
       );
     }
+    setLoading(false);
   }
 
   function moveToLogin() {
@@ -125,24 +132,11 @@ const RegistrationScreen = ({ navigation }) => {
 
       if (!result.canceled) {
         setTemtUserPhoto(result.assets[0].uri);
-        //  const photoSt = await uploadPhotoToServer();
-        // setDataRegistration((prevState) => ({
-        //   ...prevState,
-        //   photoURL: photoSt,
-        // }));
       }
     } catch (E) {
       console.log("E", E);
     }
   };
-
-  // const addPhotoUrl = async () => {
-  //   const photoSt = await uploadPhotoToServer();
-  //   setDataRegistration((prevState) => ({
-  //     ...prevState,
-  //     photo: photoSt,
-  //   }));
-  // };
 
   const uploadPhotoToServer = async () => {
     const response = await fetch(temtUserPhoto);
@@ -184,11 +178,17 @@ const RegistrationScreen = ({ navigation }) => {
               <View>
                 <Text style={styles.title}>Registration</Text>
               </View>
+
               {errorMessage ? <Text>{errorHandle(errorMessage)}</Text> : null}
               <KeyboardAvoidingView
                 behavior={Platform.OS == "ios" ? "padding" : "height"}
               >
-                <View>
+                <View style={styles.inputContainer}>
+                  {loading && (
+                    <View style={styles.activityIndicatorContainer}>
+                      <ActivityIndicator size="large" color="#FF6C00" />
+                    </View>
+                  )}
                   <TextInput
                     onFocus={() => {
                       setIsShowKeyboard(true);
@@ -386,5 +386,19 @@ const styles = StyleSheet.create({
     left: "80%",
     color: "#1B4371",
     fontSize: 16,
+  },
+  inputContainer: {
+    position: "relative",
+  },
+  activityIndicatorContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    zIndex: 999,
   },
 });

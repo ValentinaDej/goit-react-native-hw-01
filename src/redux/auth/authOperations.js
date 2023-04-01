@@ -16,6 +16,7 @@ export const authSignUp =
     try {
       const auth = getAuth(app);
       await createUserWithEmailAndPassword(auth, email, password);
+      console.log(photo);
       await updateProfile(auth.currentUser, {
         displayName: login,
         photoURL: photo,
