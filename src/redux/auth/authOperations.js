@@ -11,12 +11,15 @@ import authSlice from "./authReducer";
 import { app } from "../../../firebase/config";
 
 export const authSignUp =
-  ({ email, password, login }) =>
+  ({ email, password, login, photo }) =>
   async (dispatch) => {
     try {
       const auth = getAuth(app);
       await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(auth.currentUser, { displayName: login });
+      await updateProfile(auth.currentUser, {
+        displayName: login,
+        photoURL: photo,
+      });
 
       const { uid, displayName } = auth.currentUser;
       dispatch(
@@ -25,7 +28,6 @@ export const authSignUp =
           login: displayName,
         })
       );
-      c;
     } catch (error) {
       dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
       console.log(error.code);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { useFocusEffect } from "@react-navigation/native";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc } from "firebase/firestore";
 
 import { authSignOut } from "../../redux/auth/authOperations";
 import { db } from "../../../firebase/config";
@@ -19,21 +19,44 @@ const DefaultScreenPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
 
   const getAllPost = async () => {
-    const postssRef = await collection(db, "posts");
-    const q = query(postssRef, orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    const data = querySnapshot.docs;
-    setPosts(data.map((doc) => ({ ...doc.data(), id: doc.id })));
+    try {
+      // Отримати всі документи колекції "Posts"
+      const postsRef = await collection(db, "posts");
+      const q = query(postsRef, orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      let posts = [];
 
-    // const querySnapshot = await getDocs(collection(db, "posts"));
+      // Ітеруємось через кожен документ в колекції "Posts"
+      for (const post of snapshot.docs) {
+        // Отримати кількість документів з підколекції "Comments" для кожного документа "Post"
+        const postRef = await doc(db, "posts", post.id);
+        const commentsRef = collection(postRef, "comments");
+        const commentsSnapshot = await getDocs(commentsRef);
+        const commentsCount = commentsSnapshot.size;
 
-    // const data = querySnapshot.docs;
-    // setPosts(data.map((doc) => ({ ...doc.data(), id: doc.id })));
+        // Додати новий об'єкт до масиву "posts", включаючи кількість коментарів
+        posts.push({
+          id: post.id,
+          ...post.data(),
+          commentsCount,
+        });
+      }
+
+      setPosts(posts);
+    } catch (error) {
+      console.log("Error getting posts: ", error);
+    }
   };
 
-  useFocusEffect(() => {
+  useEffect(() => {
     getAllPost();
-  });
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      getAllPost();
+    }, [])
+  );
 
   const dispatch = useDispatch();
   const signOut = () => {
@@ -77,9 +100,13 @@ const DefaultScreenPosts = ({ navigation }) => {
                     name="message-circle"
                     size={24}
                     color="#BDBDBD"
-                    style={styles.comentIcon}
+                    style={
+                      item.commentsCount
+                        ? styles.comentIconCount
+                        : styles.comentIcon
+                    }
                   />
-                  <Text style={styles.comentText}>0</Text>
+                  <Text style={styles.comentText}>{item.commentsCount}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.comentContainer}
@@ -134,8 +161,8 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   form: {
-    marginHorizontal: 16,
     flex: 1,
+    marginHorizontal: 16,
     marginTop: 32,
   },
   userContainer: {
@@ -168,7 +195,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   comentIcon: {
-    paddingRight: 5,
+    paddingLeft: 5,
+    transform: [{ scaleX: -1 }],
+  },
+  comentIconCount: {
+    paddingLeft: 5,
+    transform: [{ scaleX: -1 }],
+    color: "#FF6C00",
   },
   comentPlace: {
     fontSize: 16,

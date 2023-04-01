@@ -71,7 +71,7 @@ const CommentsScreen = ({ navigation, route }) => {
         createdAt: Date.now().toString(),
       });
       setComment("");
-      getAllComments();
+      await getAllComments();
       keyboardHide();
       flatListRef.current.scrollToOffset({ animated: true, offset: 0 });
     } catch (e) {
@@ -136,74 +136,67 @@ const CommentsScreen = ({ navigation, route }) => {
   );
 
   return (
-    <TouchableWithoutFeedback onPress={keyboardHide}>
-      <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
-        <View style={styles.header}>
-          <Feather
-            name="arrow-left"
-            size={24}
-            color="#BDBDBD"
-            onPress={() => {
-              navigation.navigate("DefaultScreen");
-            }}
-            style={styles.icon}
-          />
-          <View style={styles.headerContainer}>
-            <Text style={styles.headerText}>Comments</Text>
-          </View>
-        </View>
-
-        <View style={styles.form}>
-          {/* <View style={styles.container}> */}
-          <Image source={{ uri: post.photo }} style={styles.postImage} />
-          <FlatList
-            data={allComments}
-            removeClippedSubviews={true}
-            initialNumToRender={10}
-            scrollEventThrottle={1}
-            ref={flatListRef}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-          />
-
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : "height"}
-          >
-            <View
-              style={{
-                ...styles.input,
-                borderColor: isFocus ? `#FF6C00` : `#E8E8E8`,
-              }}
-            >
-              <TextInput
-                style={styles.inputText}
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                  setIsFocus(true);
-                }}
-                onBlur={() => {
-                  setIsFocus(false);
-                }}
-                placeholder="Comment..."
-                value={comment}
-                onChangeText={(value) => {
-                  setComment(value);
-                }}
-              />
-              <TouchableOpacity
-                style={styles.sendGroup}
-                onPress={createComment}
-              >
-                <View style={styles.sendIcon}>
-                  <Feather name="arrow-up" size={24} color="#fff" />
-                </View>
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
-          {/* </View> */}
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <View style={styles.header}>
+        <Feather
+          name="arrow-left"
+          size={24}
+          color="#BDBDBD"
+          onPress={() => {
+            navigation.goBack();
+          }}
+          style={styles.icon}
+        />
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerText}>Comments</Text>
         </View>
       </View>
-    </TouchableWithoutFeedback>
+
+      <View style={styles.form}>
+        <Image source={{ uri: post.photo }} style={styles.postImage} />
+        <FlatList
+          data={allComments}
+          removeClippedSubviews={true}
+          initialNumToRender={10}
+          scrollEventThrottle={1}
+          ref={flatListRef}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+        />
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+        >
+          <View
+            style={{
+              ...styles.input,
+              borderColor: isFocus ? `#FF6C00` : `#E8E8E8`,
+            }}
+          >
+            <TextInput
+              style={styles.inputText}
+              onFocus={() => {
+                setIsShowKeyboard(true);
+                setIsFocus(true);
+              }}
+              onBlur={() => {
+                setIsFocus(false);
+              }}
+              placeholder="Comment..."
+              value={comment}
+              onChangeText={(value) => {
+                setComment(value);
+              }}
+            />
+            <TouchableOpacity style={styles.sendGroup} onPress={createComment}>
+              <View style={styles.sendIcon}>
+                <Feather name="arrow-up" size={24} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </View>
   );
 };
 

@@ -14,7 +14,7 @@ function MapScreen({ navigation, route }) {
           size={24}
           color="#BDBDBD"
           onPress={() => {
-            navigation.navigate("DefaultScreen");
+            navigation.goBack();
           }}
           style={styles.icon}
         />

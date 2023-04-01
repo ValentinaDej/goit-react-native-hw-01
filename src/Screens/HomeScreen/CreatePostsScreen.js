@@ -143,10 +143,9 @@ export default function CreatePostsScreen({ navigation, route }) {
   const clearPhoto = () => {
     setDataImage("");
   };
-
   const sendPost = async () => {
     if (dataImage && dataDescription && dataPlace) {
-      uploadPostToServer();
+      await uploadPostToServer();
       navigation.navigate("DefaultScreen");
       clearPost();
     }

@@ -12,6 +12,9 @@ import {
   Image,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import * as ImagePicker from "expo-image-picker";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../firebase/config";
 
 import { authSignUp } from "../../redux/auth/authOperations";
 import authSlice from "../../redux/auth/authReducer";
@@ -21,6 +24,8 @@ const initialState = {
   login: "",
   email: "",
   password: "",
+  photo: "",
+  isReady: "",
 };
 
 const RegistrationScreen = ({ navigation }) => {
@@ -33,7 +38,24 @@ const RegistrationScreen = ({ navigation }) => {
     password: false,
   });
   const { errorMessage } = useSelector((state) => state.auth);
+  const [hasImagePickerPermission, setImagePickerPermission] = useState(null);
+  const [temtUserPhoto, setTemtUserPhoto] = useState(null);
+
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS !== "web") {
+        const imagePickerPermission =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        setImagePickerPermission(imagePickerPermission.status === "granted");
+      }
+    })();
+  }, []);
+
+  if (hasImagePickerPermission === false) {
+    return <Text>No access to image picker</Text>;
+  }
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
@@ -47,18 +69,36 @@ const RegistrationScreen = ({ navigation }) => {
     };
   }, []);
 
-  function keyboardHide() {
-    setIsShowKeyboard(false);
-    Keyboard.dismiss();
-  }
-
-  function submitForm() {
+  useEffect(() => {
     if (
       dataRegistration.email &&
       dataRegistration.login &&
       dataRegistration.password
     ) {
       dispatch(authSignUp(dataRegistration));
+    }
+  }, [dataRegistration.isReady]);
+
+  function keyboardHide() {
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
+  }
+
+  async function submitForm() {
+    if (
+      dataRegistration.email &&
+      dataRegistration.login &&
+      dataRegistration.password
+    ) {
+      if (temtUserPhoto) {
+        const photoSt = await uploadPhotoToServer();
+        setDataRegistration((prevState) => ({
+          ...prevState,
+          photo: photoSt,
+          isReady: true,
+        }));
+      }
+      // await dispatch(authSignUp(dataRegistration));
     } else {
       dispatch(
         authSlice.actions.authSetError({
@@ -74,6 +114,53 @@ const RegistrationScreen = ({ navigation }) => {
     navigation.navigate("Login");
   }
 
+  const pickUpPhoto = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setTemtUserPhoto(result.assets[0].uri);
+        //  const photoSt = await uploadPhotoToServer();
+        // setDataRegistration((prevState) => ({
+        //   ...prevState,
+        //   photoURL: photoSt,
+        // }));
+      }
+    } catch (E) {
+      console.log("E", E);
+    }
+  };
+
+  // const addPhotoUrl = async () => {
+  //   const photoSt = await uploadPhotoToServer();
+  //   setDataRegistration((prevState) => ({
+  //     ...prevState,
+  //     photo: photoSt,
+  //   }));
+  // };
+
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(temtUserPhoto);
+    const file = await response.blob();
+    const uniquePostId = Date.now().toString();
+    try {
+      const storageRef = ref(storage, `/userAvatar/${uniquePostId}`);
+      const metadata = {
+        contentType: "image/jpeg",
+      };
+      await uploadBytes(storageRef, file, metadata);
+      const processedPhoto = await getDownloadURL(storageRef);
+      return processedPhoto;
+    } catch (error) {
+      console.log("error", error.code);
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
@@ -82,11 +169,14 @@ const RegistrationScreen = ({ navigation }) => {
           source={require("../../assets/images/PhotoBG.jpg")}
         >
           <View style={styles.avatarWrapper}>
-            <Image source={require("../../assets/images/frame.png")} />
-            <Image
-              style={styles.addAvatar}
-              source={require("../../assets/icons/add.png")}
-            />
+            {temtUserPhoto ? (
+              <Image source={{ uri: temtUserPhoto }} style={styles.image} />
+            ) : (
+              <Image source={require("../../assets/images/frame.png")} />
+            )}
+            <TouchableOpacity style={styles.addAvatar} onPress={pickUpPhoto}>
+              <Image source={require("../../assets/icons/add.png")} />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.wrapperForm}>
@@ -274,6 +364,13 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     backgroundColor: "#F6F6F6",
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  image: {
+    width: 120,
+    height: 120,
     borderRadius: 16,
   },
   addAvatar: {

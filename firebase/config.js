@@ -3,12 +3,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBxm4j41wyda7Y0RL4MMu2DqMMrBknr4Js",
-  authDomain: "rn-social-383ff.firebaseapp.com",
-  projectId: "rn-social-383ff",
-  storageBucket: "rn-social-383ff.appspot.com",
-  messagingSenderId: "461400031779",
-  appId: "1:461400031779:web:5601ce2ac08e86e827a796",
+  apiKey: "AIzaSyD4xP_47GflU9Ql-LtHdLSAzepth0ZETvs",
+  authDomain: "react-native-social-fc13d.firebaseapp.com",
+  projectId: "react-native-social-fc13d",
+  storageBucket: "react-native-social-fc13d.appspot.com",
+  messagingSenderId: "40947173598",
+  appId: "1:40947173598:web:08d9a8759a2bcc70c7da4f",
+  measurementId: "G-WVLMWRDWW8",
 };
 
 export const app = initializeApp(firebaseConfig);
