@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Feather } from "@expo/vector-icons";
@@ -19,39 +20,32 @@ import {
   doc,
   where,
 } from "firebase/firestore";
-import { getAuth, updateProfile } from "firebase/auth";
-//import { getAuth } from "firebase/auth";
+import * as ImagePicker from "expo-image-picker";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import { authSignOut } from "../../redux/auth/authOperations";
-import { db, app } from "../../../firebase/config";
+import { db, storage } from "../../../firebase/config";
+import { authEditProfile } from "../../redux/auth/authOperations";
 
 const ProfileScreen = ({ navigation }) => {
   const [userPosts, setUserPosts] = useState([]);
-  const [userInfo, setUserInfo] = useState({
-    displayName: null,
-    email: null,
-    photoURL: null,
-    uid: null,
-  });
-  const { userId } = useSelector((state) => state.auth);
+  const [temtUserPhoto, setTemtUserPhoto] = useState(null);
+  const [currentUserPhoto, setCurrentUserPhoto] = useState(null);
+  setCurrentUserPhoto;
+  const { userId, login, photo } = useSelector((state) => state.auth);
+  const [loading, setLoading] = useState(false);
 
-  const getUserInfo = async () => {
-    try {
-      const auth = getAuth(app);
-      const user = auth.currentUser;
-      console.log(user.photoURL);
-      if (user !== null) {
-        setUserInfo({
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          uid: user.uid,
-        });
-      }
-    } catch (error) {
-      console.log("Error getting info: ", error);
+  useEffect(() => {
+    if (!temtUserPhoto) {
+      setTemtUserPhoto(photo);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (currentUserPhoto !== null && currentUserPhoto !== photo) {
+      uploadPhotoToServer();
+    }
+  }, [currentUserPhoto]);
 
   const getAllUserPost = async () => {
     try {
@@ -87,17 +81,57 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
+  const pickUpPhoto = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      if (!result.canceled) {
+        await setTemtUserPhoto(result.assets[0].uri);
+        await setCurrentUserPhoto(result.assets[0].uri);
+        //console.log(currentUserPhoto);
+      }
+    } catch (E) {
+      console.log("E", E);
+    }
+  };
+
+  const uploadPhotoToServer = async () => {
+    setLoading(true);
+    const response = await fetch(temtUserPhoto);
+    const file = await response.blob();
+    const uniquePostId = Date.now().toString();
+    try {
+      const storageRef = ref(storage, `/userAvatar/${uniquePostId}`);
+      const metadata = {
+        contentType: "image/jpeg",
+      };
+      await uploadBytes(storageRef, file, metadata);
+      const processedPhoto = await getDownloadURL(storageRef);
+      console.log("processedPhoto", processedPhoto);
+      await dispatch(authEditProfile({ photo: processedPhoto }));
+      setLoading(false);
+      return processedPhoto;
+    } catch (error) {
+      console.log("error", error.code);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      getUserInfo();
       getAllUserPost();
     }, [])
   );
 
   const dispatch = useDispatch();
+
   const signOut = () => {
     dispatch(authSignOut());
   };
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -106,8 +140,8 @@ const ProfileScreen = ({ navigation }) => {
       >
         <View style={styles.wrapperForm}>
           <View style={styles.avatarWrapper}>
-            {userInfo.photoURL ? (
-              <Image source={{ uri: userInfo.photoURL }} style={styles.image} />
+            {temtUserPhoto ? (
+              <Image source={{ uri: temtUserPhoto }} style={styles.image} />
             ) : (
               <Image source={require("../../assets/images/frame.png")} />
             )}
@@ -116,6 +150,7 @@ const ProfileScreen = ({ navigation }) => {
               size={25}
               color="#BDBDBD"
               style={styles.addAvatar}
+              onPress={pickUpPhoto}
             />
           </View>
 
@@ -129,8 +164,15 @@ const ProfileScreen = ({ navigation }) => {
               style={styles.icon}
             />
           </View>
-          <View>
-            <Text style={styles.title}>{userInfo.displayName}</Text>
+          <View style={styles.inputContainer}>
+            {loading && (
+              <View style={styles.activityIndicatorContainer}>
+                <ActivityIndicator size="large" color="#FF6C00" />
+              </View>
+            )}
+            <View>
+              <Text style={styles.title}>{login}</Text>
+            </View>
           </View>
 
           <View style={styles.form}>
@@ -306,6 +348,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Roboto-Regular",
     color: "#BDBDBD",
+  },
+  inputContainer: {
+    position: "relative",
+  },
+  activityIndicatorContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    zIndex: 999,
   },
 });
 

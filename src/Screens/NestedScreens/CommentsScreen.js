@@ -109,7 +109,7 @@ const CommentsScreen = ({ navigation, route }) => {
           index % 2 === 0 ? styles.imageContainerEven : styles.imageContainerOdd
         }
       >
-        <Image source={require("../../assets/icons/trash.png")} />
+        <Feather name="smile" size={24} color="black" />
       </View>
       <View style={styles.textComent}>
         <Text

@@ -22,11 +22,12 @@ export const authSignUp =
         photoURL: photo,
       });
 
-      const { uid, displayName } = auth.currentUser;
-      dispatch(
+      const { uid, displayName, photoURL } = auth.currentUser;
+      await dispatch(
         authSlice.actions.updateUserProfile({
           userId: uid,
           login: displayName,
+          photo: photoURL,
         })
       );
     } catch (error) {
@@ -41,7 +42,42 @@ export const authSignIn =
     try {
       const auth = getAuth(app);
       await signInWithEmailAndPassword(auth, email, password);
+
+      const { uid, displayName, photoURL } = auth.currentUser;
+      console.log(displayName);
+      console.log("photoURL", photoURL);
+      await dispatch(
+        authSlice.actions.updateUserProfile({
+          userId: uid,
+          login: displayName,
+          photo: photoURL,
+        })
+      );
       dispatch(authSlice.actions.authSetError({ errorMessage: "" }));
+    } catch (error) {
+      dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
+      console.log(error.code);
+    }
+  };
+
+export const authEditProfile =
+  ({ photo }) =>
+  async (dispatch) => {
+    console.log("authEditProfile", photo);
+    try {
+      const auth = getAuth(app);
+      await updateProfile(auth.currentUser, {
+        photoURL: photo,
+      });
+
+      const { uid, displayName, photoURL } = auth.currentUser;
+      await dispatch(
+        authSlice.actions.updateUserProfile({
+          userId: uid,
+          login: displayName,
+          photo: photoURL,
+        })
+      );
     } catch (error) {
       dispatch(authSlice.actions.authSetError({ errorMessage: error.code }));
       console.log(error.code);
@@ -64,7 +100,7 @@ export const authStateChanged = () => async (dispatch, getState) => {
   const auth = getAuth(app);
   const unsubscribe = onAuthStateChanged(auth, async (user) => {
     if (user) {
-      dispatch(
+      await dispatch(
         authSlice.actions.updateUserProfile({
           userId: user.uid,
           login: user.displayName,

@@ -10,7 +10,14 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { useFocusEffect } from "@react-navigation/native";
-import { collection, getDocs, query, orderBy, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 
 import { authSignOut } from "../../redux/auth/authOperations";
 import { db } from "../../../firebase/config";

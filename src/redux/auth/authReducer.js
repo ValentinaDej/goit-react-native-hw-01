@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const state = {
   userId: null,
   login: null,
+  photo: null,
   stateChanged: false,
   errorMessage: "",
 };
@@ -15,6 +16,7 @@ const authSlice = createSlice({
       ...state,
       login: payload.login,
       userId: payload.userId,
+      photo: payload.photo,
     }),
     authStateChanged: (state, { payload }) => ({
       ...state,
