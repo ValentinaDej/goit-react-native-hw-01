@@ -15,8 +15,8 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../../../firebase/config";
 
+import { storage } from "../../../firebase/config";
 import { authSignUp } from "../../redux/auth/authOperations";
 import authSlice from "../../redux/auth/authReducer";
 import errorHandle from "../../services/errorHandle";
@@ -30,8 +30,8 @@ const initialState = {
 };
 
 const RegistrationScreen = ({ navigation }) => {
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [dataRegistration, setDataRegistration] = useState(initialState);
+  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
   const [isFocus, setIsFocus] = useState({
     login: false,
@@ -39,25 +39,10 @@ const RegistrationScreen = ({ navigation }) => {
     password: false,
   });
   const { errorMessage } = useSelector((state) => state.auth);
-  const [hasImagePickerPermission, setImagePickerPermission] = useState(null);
   const [temtUserPhoto, setTemtUserPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS !== "web") {
-        const imagePickerPermission =
-          await ImagePicker.requestMediaLibraryPermissionsAsync();
-        setImagePickerPermission(imagePickerPermission.status === "granted");
-      }
-    })();
-  }, []);
-
-  if (hasImagePickerPermission === false) {
-    return <Text>No access to image picker</Text>;
-  }
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
@@ -101,9 +86,11 @@ const RegistrationScreen = ({ navigation }) => {
           isReady: true,
         }));
         setLoading(false);
+        setDataRegistration(initialState);
         return;
       } else {
         await dispatch(authSignUp(dataRegistration));
+        setDataRegistration(initialState);
       }
     } else {
       dispatch(

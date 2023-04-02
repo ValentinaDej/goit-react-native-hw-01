@@ -6,9 +6,10 @@ import {
   updateProfile,
   signOut,
 } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 import authSlice from "./authReducer";
-import { app } from "../../../firebase/config";
+import { app, db } from "../../../firebase/config";
 
 export const authSignUp =
   ({ email, password, login, photo }) =>
@@ -16,10 +17,22 @@ export const authSignUp =
     try {
       const auth = getAuth(app);
       await createUserWithEmailAndPassword(auth, email, password);
-      console.log(photo);
+      //   console.log(photo);
       await updateProfile(auth.currentUser, {
         displayName: login,
         photoURL: photo,
+      });
+
+      await onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          await setDoc(doc(db, "users", user.uid), {
+            userId: user.uid,
+            login: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            createdAt: Date.now().toString(),
+          });
+        }
       });
 
       const { uid, displayName, photoURL } = auth.currentUser;
@@ -44,8 +57,8 @@ export const authSignIn =
       await signInWithEmailAndPassword(auth, email, password);
 
       const { uid, displayName, photoURL } = auth.currentUser;
-      console.log(displayName);
-      console.log("photoURL", photoURL);
+      // console.log(displayName);
+      // console.log("photoURL", photoURL);
       await dispatch(
         authSlice.actions.updateUserProfile({
           userId: uid,
@@ -63,11 +76,18 @@ export const authSignIn =
 export const authEditProfile =
   ({ photo }) =>
   async (dispatch) => {
-    console.log("authEditProfile", photo);
+    //console.log("authEditProfile", photo);
     try {
       const auth = getAuth(app);
       await updateProfile(auth.currentUser, {
         photoURL: photo,
+      });
+
+      await onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const userRef = await doc(db, "users", user.uid);
+          await setDoc(userRef, { photoURL: photo }, { merge: true });
+        }
       });
 
       const { uid, displayName, photoURL } = auth.currentUser;
@@ -104,6 +124,7 @@ export const authStateChanged = () => async (dispatch, getState) => {
         authSlice.actions.updateUserProfile({
           userId: user.uid,
           login: user.displayName,
+          photo: user.photoURL,
         })
       );
       dispatch(authSlice.actions.authStateChanged({ stateChanged: true }));

@@ -6,10 +6,8 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   KeyboardAvoidingView,
-  TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
 import { useSelector } from "react-redux";
@@ -33,7 +31,7 @@ const CommentsScreen = ({ navigation, route }) => {
   const [comment, setComment] = useState("");
   const [allComments, setAllComments] = useState([]);
   const [post, setPost] = useState({});
-  const { login } = useSelector((state) => state.auth);
+  const { userId } = useSelector((state) => state.auth);
   const flatListRef = useRef(null);
 
   useEffect(() => {
@@ -67,7 +65,7 @@ const CommentsScreen = ({ navigation, route }) => {
       const docRef = await doc(db, "posts", postId);
       await addDoc(collection(docRef, "comments"), {
         comment,
-        login,
+        userId,
         createdAt: Date.now().toString(),
       });
       setComment("");
@@ -89,11 +87,26 @@ const CommentsScreen = ({ navigation, route }) => {
       console.log("No such document!");
     }
 
-    const comentRef = collection(docRef, "comments");
-    const q = query(comentRef, orderBy("createdAt", "desc"));
-    const querySnap = await getDocs(q);
-    const data = querySnap.docs;
-    setAllComments(data.map((doc) => ({ ...doc.data(), id: doc.id })));
+    const commentRef = await collection(docRef, "comments");
+    const q = query(commentRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    let comments = [];
+
+    // Ітеруємось через кожен документ в колекції "comments"
+    for (const comment of snapshot.docs) {
+      // Отримати дані автора поста
+      const userRef = doc(db, "users", comment.data().userId);
+      const userSnap = await getDoc(userRef);
+      // Додати новий об'єкт до масиву "comments", включаючи автора
+      comments.push({
+        id: comment.id,
+        comment: comment.data().comment,
+        createdAt: comment.data().createdAt,
+        photoUser: userSnap.data().photoURL,
+        login: userSnap.data().login,
+      });
+    }
+    setAllComments(comments);
   };
 
   const renderItem = ({ item, index }) => (
@@ -109,24 +122,24 @@ const CommentsScreen = ({ navigation, route }) => {
           index % 2 === 0 ? styles.imageContainerEven : styles.imageContainerOdd
         }
       >
-        <Feather name="smile" size={24} color="black" />
+        <Image source={{ uri: item.photoUser }} style={styles.photoUser} />
       </View>
-      <View style={styles.textComent}>
+      <View style={styles.textComment}>
         <Text
           style={
             index % 2 === 0
-              ? styles.textComentLoginEven
-              : styles.textComentLoginOdd
+              ? styles.textCommentLoginEven
+              : styles.textCommentLoginOdd
           }
         >
           {item.login}
         </Text>
-        <Text style={styles.textComentText}>{item.comment}</Text>
+        <Text style={styles.textCommentText}>{item.comment}</Text>
         <Text
           style={
             index % 2 === 0
-              ? styles.textComentDateEven
-              : styles.textComentDateOdd
+              ? styles.textCommentDateEven
+              : styles.textCommentDateOdd
           }
         >
           {Date(item.createdAt)}
@@ -283,42 +296,46 @@ const styles = StyleSheet.create({
     // width: 28,
     // height: 28,
   },
-  textComent: {
+  textComment: {
     flex: 1,
     backgroundColor: "#F6F6F6",
     padding: 16,
     borderRadius: 6,
   },
-  textComentLoginEven: {
+  textCommentLoginEven: {
     fontFamily: "Roboto-Regular",
     fontSize: 13,
     fontWeight: "bold",
     marginBottom: 8,
   },
-  textComentLoginOdd: {
+  textCommentLoginOdd: {
     fontFamily: "Roboto-Regular",
     fontSize: 13,
     fontWeight: "bold",
     marginBottom: 5,
     alignSelf: "flex-end",
   },
-  textComentText: {
+  textCommentText: {
     fontFamily: "Roboto-Regular",
     fontSize: 13,
     color: "#212121",
-    //lineHeight: 138,
     marginBottom: 8,
   },
-  textComentDateEven: {
+  textCommentDateEven: {
     fontFamily: "Roboto-Regular",
     fontSize: 10,
     color: "#BDBDBD",
   },
-  textComentDateOdd: {
+  textCommentDateOdd: {
     fontFamily: "Roboto-Regular",
     fontSize: 10,
     color: "#BDBDBD",
     alignSelf: "flex-end",
+  },
+  photoUser: {
+    width: 28,
+    height: 28,
+    borderRadius: 50,
   },
 });
 

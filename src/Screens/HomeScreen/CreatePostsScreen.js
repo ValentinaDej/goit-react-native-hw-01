@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -15,14 +15,14 @@ import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc } from "firebase/firestore";
 
 import { storage, db } from "../../../firebase/config";
 
-export default function CreatePostsScreen({ navigation, route }) {
+export default function CreatePostsScreen({ navigation }) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] =
     useState(null);
@@ -60,12 +60,6 @@ export default function CreatePostsScreen({ navigation, route }) {
       setHasCameraPermission(cameraPermission.status === "granted");
       setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
       setLocationPermission(locationPermission.status === "granted");
-
-      const locationRes = await Location.getCurrentPositionAsync();
-      setDataLocation({
-        latitude: locationRes.coords.latitude,
-        longitude: locationRes.coords.longitude,
-      });
     })();
   }, []);
 
@@ -74,6 +68,24 @@ export default function CreatePostsScreen({ navigation, route }) {
       camera.stopRecording();
     }
   }, [isFocused]);
+
+  useFocusEffect(
+    useCallback(() => {
+      getLocation();
+    }, [])
+  );
+
+  useEffect(() => {
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setIsShowKeyboard(false);
+      }
+    );
+    return () => {
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   if (hasCameraPermission === false) {
     return <Text>No access to camera</Text>;
@@ -91,22 +103,18 @@ export default function CreatePostsScreen({ navigation, route }) {
     return <Text>No access to location</Text>;
   }
 
-  useEffect(() => {
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setIsShowKeyboard(false);
-      }
-    );
-    return () => {
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
   function keyboardHide() {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
   }
+
+  const getLocation = async () => {
+    const locationRes = await Location.getCurrentPositionAsync();
+    setDataLocation({
+      latitude: locationRes.coords.latitude,
+      longitude: locationRes.coords.longitude,
+    });
+  };
 
   const changeCameraType = () => {
     setType(
@@ -140,9 +148,6 @@ export default function CreatePostsScreen({ navigation, route }) {
     }
   };
 
-  const clearPhoto = () => {
-    setDataImage("");
-  };
   const sendPost = async () => {
     if (dataImage && dataDescription && dataPlace) {
       await uploadPostToServer();
@@ -181,6 +186,10 @@ export default function CreatePostsScreen({ navigation, route }) {
     } catch (error) {
       console.log("error", error.code);
     }
+  };
+
+  const clearPhoto = () => {
+    setDataImage("");
   };
 
   const clearPost = () => {

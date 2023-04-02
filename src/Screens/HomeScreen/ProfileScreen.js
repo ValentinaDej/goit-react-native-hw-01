@@ -47,6 +47,12 @@ const ProfileScreen = ({ navigation }) => {
     }
   }, [currentUserPhoto]);
 
+  useFocusEffect(
+    useCallback(() => {
+      getAllUserPost();
+    }, [])
+  );
+
   const getAllUserPost = async () => {
     try {
       // Отримати всі документи колекції "Posts"
@@ -92,7 +98,6 @@ const ProfileScreen = ({ navigation }) => {
       if (!result.canceled) {
         await setTemtUserPhoto(result.assets[0].uri);
         await setCurrentUserPhoto(result.assets[0].uri);
-        //console.log(currentUserPhoto);
       }
     } catch (E) {
       console.log("E", E);
@@ -111,7 +116,7 @@ const ProfileScreen = ({ navigation }) => {
       };
       await uploadBytes(storageRef, file, metadata);
       const processedPhoto = await getDownloadURL(storageRef);
-      console.log("processedPhoto", processedPhoto);
+      //console.log("processedPhoto", processedPhoto);
       await dispatch(authEditProfile({ photo: processedPhoto }));
       setLoading(false);
       return processedPhoto;
@@ -119,12 +124,6 @@ const ProfileScreen = ({ navigation }) => {
       console.log("error", error.code);
     }
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      getAllUserPost();
-    }, [])
-  );
 
   const dispatch = useDispatch();
 
@@ -187,9 +186,9 @@ const ProfileScreen = ({ navigation }) => {
                     style={styles.postImage}
                   />
                   <Text style={styles.postDescription}>{item.description}</Text>
-                  <View style={styles.comentCommonContainer}>
+                  <View style={styles.commentCommonContainer}>
                     <TouchableOpacity
-                      style={styles.comentContainer}
+                      style={styles.commentContainer}
                       onPress={() =>
                         navigation.navigate("Comments", { postId: item.id })
                       }
@@ -200,16 +199,16 @@ const ProfileScreen = ({ navigation }) => {
                         color="#BDBDBD"
                         style={
                           item.commentsCount
-                            ? styles.comentIconCount
-                            : styles.comentIcon
+                            ? styles.commentIconCount
+                            : styles.commentIcon
                         }
                       />
-                      <Text style={styles.comentText}>
+                      <Text style={styles.commentText}>
                         {item.commentsCount}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.comentContainer}
+                      style={styles.commentContainer}
                       onPress={() => {
                         const location = item.location;
                         const description = item.description;
@@ -223,9 +222,9 @@ const ProfileScreen = ({ navigation }) => {
                         name="map-pin"
                         size={24}
                         color="#BDBDBD"
-                        style={styles.comentIcon}
+                        style={styles.commentIcon}
                       />
-                      <Text style={styles.comentPlace}>{item.place}</Text>
+                      <Text style={styles.commentPlace}>{item.place}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -320,31 +319,31 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     fontWeight: "bold",
   },
-  comentCommonContainer: {
+  commentCommonContainer: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  comentContainer: {
+  commentContainer: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
   },
-  comentIcon: {
+  commentIcon: {
     paddingLeft: 5,
     transform: [{ scaleX: -1 }],
   },
-  comentIconCount: {
+  commentIconCount: {
     paddingLeft: 5,
     transform: [{ scaleX: -1 }],
     color: "#FF6C00",
   },
-  comentPlace: {
+  commentPlace: {
     fontSize: 16,
     fontFamily: "Roboto-Regular",
     textDecorationLine: "underline",
   },
-  comentText: {
+  commentText: {
     fontSize: 16,
     fontFamily: "Roboto-Regular",
     color: "#BDBDBD",

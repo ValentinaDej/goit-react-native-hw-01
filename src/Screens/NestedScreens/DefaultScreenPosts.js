@@ -25,6 +25,16 @@ import { db } from "../../../firebase/config";
 const DefaultScreenPosts = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
 
+  useEffect(() => {
+    getAllPost();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      getAllPost();
+    }, [])
+  );
+
   const getAllPost = async () => {
     try {
       // Отримати всі документи колекції "Posts"
@@ -41,11 +51,18 @@ const DefaultScreenPosts = ({ navigation }) => {
         const commentsSnapshot = await getDocs(commentsRef);
         const commentsCount = commentsSnapshot.size;
 
-        // Додати новий об'єкт до масиву "posts", включаючи кількість коментарів
+        // Отримати дані автора поста
+        const userRef = doc(db, "users", post.data().userId);
+        const userSnap = await getDoc(userRef);
+
+        // Додати новий об'єкт до масиву "posts", включаючи кількість коментарів, та автора
         posts.push({
           id: post.id,
           ...post.data(),
           commentsCount,
+          login: userSnap.data().login,
+          email: userSnap.data().email,
+          photoUser: userSnap.data().photoURL,
         });
       }
 
@@ -54,16 +71,6 @@ const DefaultScreenPosts = ({ navigation }) => {
       console.log("Error getting posts: ", error);
     }
   };
-
-  useEffect(() => {
-    getAllPost();
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      getAllPost();
-    }, [])
-  );
 
   const dispatch = useDispatch();
   const signOut = () => {
@@ -84,21 +91,27 @@ const DefaultScreenPosts = ({ navigation }) => {
           style={styles.icon}
         />
       </View>
-
       <View style={styles.form}>
-        <View style={styles.userContainer}>
-          <Text>User info</Text>
-        </View>
         <FlatList
           data={posts}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.postContainer}>
+              <View style={styles.userContainer}>
+                <Image
+                  source={{ uri: item.photoUser }}
+                  style={styles.photoUser}
+                />
+                <View style={styles.infoUser}>
+                  <Text style={styles.loginUser}>{item.login}</Text>
+                  <Text style={styles.emailUser}>{item.email}</Text>
+                </View>
+              </View>
               <Image source={{ uri: item.photo }} style={styles.postImage} />
               <Text style={styles.postDescription}>{item.description}</Text>
-              <View style={styles.comentCommonContainer}>
+              <View style={styles.commentCommonContainer}>
                 <TouchableOpacity
-                  style={styles.comentContainer}
+                  style={styles.commentContainer}
                   onPress={() =>
                     navigation.navigate("Comments", { postId: item.id })
                   }
@@ -109,14 +122,14 @@ const DefaultScreenPosts = ({ navigation }) => {
                     color="#BDBDBD"
                     style={
                       item.commentsCount
-                        ? styles.comentIconCount
-                        : styles.comentIcon
+                        ? styles.commentIconCount
+                        : styles.commentIcon
                     }
                   />
-                  <Text style={styles.comentText}>{item.commentsCount}</Text>
+                  <Text style={styles.commentText}>{item.commentsCount}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.comentContainer}
+                  style={styles.commentContainer}
                   onPress={() => {
                     const location = item.location;
                     const description = item.description;
@@ -130,9 +143,9 @@ const DefaultScreenPosts = ({ navigation }) => {
                     name="map-pin"
                     size={24}
                     color="#BDBDBD"
-                    style={styles.comentIcon}
+                    style={styles.commentIcon}
                   />
-                  <Text style={styles.comentPlace}>{item.place}</Text>
+                  <Text style={styles.commentPlace}>{item.place}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -173,7 +186,9 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   userContainer: {
-    marginBottom: 32,
+    display: "flex",
+    flexDirection: "row",
+    marginBottom: 16,
   },
   postContainer: {
     marginBottom: 32,
@@ -191,34 +206,53 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     fontWeight: "bold",
   },
-  comentCommonContainer: {
+  commentCommonContainer: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  comentContainer: {
+  commentContainer: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
   },
-  comentIcon: {
+  commentIcon: {
     paddingLeft: 5,
     transform: [{ scaleX: -1 }],
   },
-  comentIconCount: {
+  commentIconCount: {
     paddingLeft: 5,
     transform: [{ scaleX: -1 }],
     color: "#FF6C00",
   },
-  comentPlace: {
+  commentPlace: {
     fontSize: 16,
     fontFamily: "Roboto-Regular",
     textDecorationLine: "underline",
   },
-  comentText: {
+  commentText: {
     fontSize: 16,
     fontFamily: "Roboto-Regular",
     color: "#BDBDBD",
+  },
+  photoUser: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+  },
+  infoUser: {
+    justifyContent: "center",
+    paddingLeft: 8,
+  },
+  loginUser: {
+    fontSize: 13,
+    fontFamily: "Roboto-Regular",
+    fontWeight: "bold",
+  },
+  emailUser: {
+    fontSize: 11,
+    fontFamily: "Roboto-Regular",
+    color: "rgba(33, 33, 33, 0.8)",
   },
 });
 

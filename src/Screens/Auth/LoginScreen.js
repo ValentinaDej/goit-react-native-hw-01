@@ -23,8 +23,8 @@ const initialState = {
 };
 
 const LoginScreen = ({ navigation }) => {
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [dataLogin, setDataLogin] = useState(initialState);
+  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [isSecureEntry, setIsSecureEntry] = useState(true);
   const [isFocus, setIsFocus] = useState({
     email: false,
