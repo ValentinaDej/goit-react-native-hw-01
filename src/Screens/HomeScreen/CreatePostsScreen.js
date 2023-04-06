@@ -9,6 +9,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { Camera } from "expo-camera";
@@ -39,7 +40,7 @@ export default function CreatePostsScreen({ navigation }) {
     latitude: "",
     longitude: "",
   });
-
+  const [loading, setLoading] = useState(false);
   const isFocused = useIsFocused();
 
   const { userId, login } = useSelector((state) => state.auth);
@@ -69,11 +70,11 @@ export default function CreatePostsScreen({ navigation }) {
     }
   }, [isFocused]);
 
-  useFocusEffect(
-    useCallback(() => {
-      getLocation();
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     //getLocation();
+  //   }, [])
+  // );
 
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
@@ -107,14 +108,6 @@ export default function CreatePostsScreen({ navigation }) {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
   }
-
-  const getLocation = async () => {
-    const locationRes = await Location.getCurrentPositionAsync();
-    setDataLocation({
-      latitude: locationRes.coords.latitude,
-      longitude: locationRes.coords.longitude,
-    });
-  };
 
   const changeCameraType = () => {
     setType(
@@ -157,13 +150,26 @@ export default function CreatePostsScreen({ navigation }) {
   };
 
   const uploadPostToServer = async () => {
+    let locationRes;
+    setLoading(true);
     const photo = await uploadPhotoToServer();
+    try {
+      locationRes = await Location.getCurrentPositionAsync({});
+    } catch (error) {}
+
+    if (!locationRes) {
+      locationRes = { coords: { latitude: 0, longitude: 0 } };
+    }
+
     try {
       const docRef = await addDoc(collection(db, "posts"), {
         photo,
         description: dataDescription,
         place: dataPlace,
-        location: dataLocation,
+        location: {
+          latitude: locationRes.coords.latitude,
+          longitude: locationRes.coords.longitude,
+        },
         userId,
         login,
         createdAt: Date.now().toString(),
@@ -171,6 +177,7 @@ export default function CreatePostsScreen({ navigation }) {
     } catch (e) {
       console.error("Error adding document: ", e);
     }
+    setLoading(false);
   };
 
   const uploadPhotoToServer = async () => {
@@ -217,116 +224,126 @@ export default function CreatePostsScreen({ navigation }) {
         </View>
 
         <View style={styles.form}>
-          <View style={styles.cameraContainer}>
-            <Camera
-              ref={(ref) => setCamera(ref)}
-              style={styles.fixedRatio}
-              type={type}
-              resizeMode="cover"
-            >
-              <View style={styles.lastPhotoContainer}>
-                {dataImage && (
-                  <Image source={{ uri: dataImage }} style={styles.lastPhoto} />
-                )}
+          <View style={styles.inputContainer}>
+            {loading && (
+              <View style={styles.activityIndicatorContainer}>
+                <ActivityIndicator size="large" color="#FF6C00" />
               </View>
-              <TouchableOpacity
-                style={styles.iconCameraContainer}
-                onPress={takePhoto}
+            )}
+            <View style={styles.cameraContainer}>
+              <Camera
+                ref={(ref) => setCamera(ref)}
+                style={styles.fixedRatio}
+                type={type}
+                resizeMode="cover"
               >
-                <Feather name="camera" size={24} color="#BDBDBD" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.iconCameraFlipContainer}
-                onPress={changeCameraType}
-              >
-                <Feather name="rotate-ccw" size={24} color="#BDBDBD" />
-              </TouchableOpacity>
-            </Camera>
-          </View>
-
-          {dataImage ? (
-            <TouchableOpacity onPress={clearPhoto}>
-              <Text style={styles.editor}>Edit photo</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={downloadPhoto}>
-              <Text style={styles.editor}>Download photo</Text>
-            </TouchableOpacity>
-          )}
-
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : "height"}
-          >
-            <View style={styles.textContainer}>
-              <TextInput
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                }}
-                placeholder="Title..."
-                value={dataDescription}
-                onChangeText={(value) => {
-                  setDataDescription(value);
-                }}
-                autoComplete="off"
-                style={{
-                  ...styles.text,
-                  color: dataDescription ? `#212121` : `#BDBDBD`,
-                  fontWeight: dataDescription ? `bold` : `normal`,
-                }}
-                selectionColor="#BDBDBD"
-              />
+                <View style={styles.lastPhotoContainer}>
+                  {dataImage && (
+                    <Image
+                      source={{ uri: dataImage }}
+                      style={styles.lastPhoto}
+                    />
+                  )}
+                </View>
+                <TouchableOpacity
+                  style={styles.iconCameraContainer}
+                  onPress={takePhoto}
+                >
+                  <Feather name="camera" size={24} color="#BDBDBD" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iconCameraFlipContainer}
+                  onPress={changeCameraType}
+                >
+                  <Feather name="rotate-ccw" size={24} color="#BDBDBD" />
+                </TouchableOpacity>
+              </Camera>
             </View>
 
-            <View style={{ ...styles.textContainer, marginBottom: 32 }}>
-              <TouchableOpacity>
-                <Feather name="map-pin" size={24} color="#BDBDBD" />
+            {dataImage ? (
+              <TouchableOpacity onPress={clearPhoto}>
+                <Text style={styles.editor}>Edit photo</Text>
               </TouchableOpacity>
-              <TextInput
-                onFocus={() => {
-                  setIsShowKeyboard(true);
-                }}
-                placeholder="Place..."
-                maxLength={200}
-                value={dataPlace}
-                onChangeText={(value) => setDataPlace(value)}
-                style={{
-                  ...styles.text,
-                  marginLeft: 5,
-                  color: dataPlace ? "#212121" : "#BDBDBD",
-                }}
-                selectionColor="#BDBDBD"
-              />
-            </View>
-          </KeyboardAvoidingView>
-          {!isShowKeyboard && (
-            <View>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={sendPost}
-                style={{
-                  ...styles.btn,
-                  backgroundColor:
-                    dataImage && dataDescription && dataPlace
-                      ? "#FF6C00"
-                      : "#F6F6F6",
-                  color:
-                    dataImage && dataDescription && dataPlace
-                      ? "#FFFFFF"
-                      : "#BDBDBD",
-                }}
-              >
-                <Text style={styles.text}>Send</Text>
+            ) : (
+              <TouchableOpacity onPress={downloadPhoto}>
+                <Text style={styles.editor}>Download photo</Text>
               </TouchableOpacity>
+            )}
 
-              <TouchableOpacity onPress={clearPost} style={styles.trash}>
-                {/* <Feather name="trash-2" size={24} color="black" /> */}
-                <Image
-                  style={styles.trashIcon}
-                  source={require("../../assets/icons/trash.png")}
+            <KeyboardAvoidingView
+              behavior={Platform.OS == "ios" ? "padding" : "height"}
+            >
+              <View style={styles.textContainer}>
+                <TextInput
+                  onFocus={() => {
+                    setIsShowKeyboard(true);
+                  }}
+                  placeholder="Title..."
+                  value={dataDescription}
+                  onChangeText={(value) => {
+                    setDataDescription(value);
+                  }}
+                  autoComplete="off"
+                  style={{
+                    ...styles.text,
+                    color: dataDescription ? `#212121` : `#BDBDBD`,
+                    fontWeight: dataDescription ? `bold` : `normal`,
+                  }}
+                  selectionColor="#BDBDBD"
                 />
-              </TouchableOpacity>
-            </View>
-          )}
+              </View>
+
+              <View style={{ ...styles.textContainer, marginBottom: 32 }}>
+                <TouchableOpacity>
+                  <Feather name="map-pin" size={24} color="#BDBDBD" />
+                </TouchableOpacity>
+                <TextInput
+                  onFocus={() => {
+                    setIsShowKeyboard(true);
+                  }}
+                  placeholder="Place..."
+                  maxLength={200}
+                  value={dataPlace}
+                  onChangeText={(value) => setDataPlace(value)}
+                  style={{
+                    ...styles.text,
+                    marginLeft: 5,
+                    color: dataPlace ? "#212121" : "#BDBDBD",
+                  }}
+                  selectionColor="#BDBDBD"
+                />
+              </View>
+            </KeyboardAvoidingView>
+            {!isShowKeyboard && (
+              <View>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={sendPost}
+                  style={{
+                    ...styles.btn,
+                    backgroundColor:
+                      dataImage && dataDescription && dataPlace
+                        ? "#FF6C00"
+                        : "#F6F6F6",
+                    color:
+                      dataImage && dataDescription && dataPlace
+                        ? "#FFFFFF"
+                        : "#BDBDBD",
+                  }}
+                >
+                  <Text style={styles.text}>Send</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={clearPost} style={styles.trash}>
+                  {/* <Feather name="trash-2" size={24} color="black" /> */}
+                  <Image
+                    style={styles.trashIcon}
+                    source={require("../../assets/icons/trash.png")}
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -443,5 +460,16 @@ const styles = StyleSheet.create({
     marginTop: 150,
     height: 60,
     marginBottom: 20,
+  },
+  activityIndicatorContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    zIndex: 999,
   },
 });
